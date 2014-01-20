@@ -30,13 +30,18 @@ public class ServerGame implements LevelInfo, ChunkLoader {
     private Chunk chunk = null;
     private World world;
 
+    private Hashtable onlinePlayers;
+    private int id;
+
     public ServerGame(Comcraft cc, String ip) {
         this.cc = cc;
         guiscr = new GuiServerMessage(cc.currentScreen, this);
         cc.displayGuiScreen(guiscr);
         if (connect(ip)) {
             guiscr.setText(cc.langBundle.getText("ServerGame.login"));
-            sender.sendPacket(new PacketLogin(Comcraft.getImei(), cc.settings.username));
+            PacketLogin login = new PacketLogin(Comcraft.getImei(), cc.settings.username);
+            id = login.uniqueId;
+            sender.sendPacket(login);
         } else {
             client = null;
         }
@@ -98,6 +103,7 @@ public class ServerGame implements LevelInfo, ChunkLoader {
 
     public void begin() {
         cc.playerManager = new PlayerManagerImp(cc);
+        onlinePlayers = new Hashtable();
         sender.sendPacket(new PacketWorldInfo());
         startWorld();
 
@@ -106,7 +112,7 @@ public class ServerGame implements LevelInfo, ChunkLoader {
     private void startWorld() {
         cc.guiIngame = new GuiIngame(cc);
         cc.guiIngame.initIngameGui();
-        cc.player = cc.playerManager.createPlayer();
+        cc.player = new EntityPlayer(cc, this);
         cc.guiIngame.addCommandButton();
     }
 
@@ -341,5 +347,26 @@ public class ServerGame implements LevelInfo, ChunkLoader {
     public void handleDisconnect(String reason, PacketDisconnect p) {
         injectDisconnectPacket(cc.player);
         quitServer(reason);
+    }
+
+    public void handlePlayerMove(int playerId, Vec3D newPos) {
+        EntityPlayer player = (EntityPlayer) onlinePlayers.get(new Integer(playerId));
+        player.xPos = newPos.x;
+        player.yPos = newPos.y;
+        player.zPos = newPos.z;
+    }
+
+    public void handleNewPlayer(int playerId, Vec3D pos) {
+        onlinePlayers.put(new Integer(playerId), new EntityPlayer(cc));
+        handlePlayerMove(playerId, pos);
+    }
+
+    public void handlePlayerQuit(int playerId) {
+        EntityPlayer player = (EntityPlayer) onlinePlayers.get(new Integer(playerId));
+        onlinePlayers.remove(player);
+    }
+
+    public void playerMoved(EntityPlayer player) {
+        sender.sendPacket(new PacketPlayerData(id, player.getPosition()));
     }
 }

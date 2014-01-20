@@ -39,6 +39,8 @@ public class EntityPlayer {
     private float h;
     private float w;
     private AxisAlignedBB boundingBox;
+    private ServerGame server = null;
+    private Vec3D blockVec;
 
     public EntityPlayer(Comcraft cc) {
         this.cc = cc;
@@ -51,6 +53,12 @@ public class EntityPlayer {
         h = 2 * (float) Math.tan(Math.toRadians(cc.settings.fov / 2));
         w = aspect * h;
         boundingBox = new AxisAlignedBB(0, 0, 0, 0, 0, 0);
+        blockVec = new Vec3D(xPos, yPos, zPos);
+    }
+
+    public EntityPlayer(Comcraft cc, ServerGame server) {
+        this(cc);
+        this.server = server;
     }
 
     public void setPlayerOnWorldCenter(int worldSize) {
@@ -128,13 +136,20 @@ public class EntityPlayer {
         boundingBox.setBounds(xPosNew - 0.2f, yPosNew - 0.2f, zPosNew - 0.2f, xPosNew + 0.2f, yPosNew + 0.2f, zPosNew + 0.2f);
 
         if (!collidesWithWorld(xPosNew, yPosNew, zPosNew)) {
+            if (server != null) {
+                Vec3D newVec = new Vec3D(xPosNew, yPosNew, zPosNew);
+                if (blockVec.distanceTo(newVec) >= 1) {
+                    server.playerMoved(this);
+                    blockVec = newVec;
+                }
+            }
+
             xPos = xPosNew;
             yPos = yPosNew;
             zPos = zPosNew;
         } else {
             vVec.setComponents(0, 0, 0);
         }
-
 
         Vec3D slowVec = new Vec3D(vVec);
         slowVec = slowVec.normalize();
@@ -267,7 +282,7 @@ public class EntityPlayer {
         dataOutputStream.writeFloat(rotationPitch);
         dataOutputStream.writeFloat(rotationYaw);
 
-        //from CC 0.6 (worldVersion 3)
+        // from CC 0.6 (worldVersion 3)
 
         dataOutputStream.writeInt(inventory.getFastSlotSize());
 
@@ -275,7 +290,7 @@ public class EntityPlayer {
             dataOutputStream.writeInt(inventory.getItemStackAt(n).itemID);
         }
 
-        //from CCML 0.4 (worldVersion 4)
+        // from CCML 0.4 (worldVersion 4)
 
         dataOutputStream.writeBoolean(commandsAllowed);
     }
