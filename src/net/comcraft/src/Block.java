@@ -396,6 +396,7 @@ public class Block extends JsObject {
         new BlockAnimal(125, 339, 341, 340, 357, 357).setBlockName("animalChicken");
         new BlockAnimal(126, 342, 344, 343, 344, 344).setBlockName("animalCow");
         new BlockAnimal(127, 345, 348, 346, 347, 347).setBlockName("animalPig");
+        new BlockPlayer().setBlockName("Player");
 
         InvItem.itemsList[getBlock("stoneSlab").blockID] = new InvItemSlab(getBlock("stoneSlab").blockID - 256, getBlock("doubleStoneSlab"));
         InvItem.itemsList[getBlock("plankSlab").blockID] = new InvItemSlab(getBlock("plankSlab").blockID - 256, getBlock("planks"));

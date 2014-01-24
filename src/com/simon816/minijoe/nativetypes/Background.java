@@ -10,17 +10,17 @@ public class Background extends JsObject {
 
     public Background() {
         super(OBJECT_PROTOTYPE);
-        this.bg = new javax.microedition.m3g.Background();
+        bg = new javax.microedition.m3g.Background();
         addNative("setColor", ID_SET_COLOR, 1);
         addNative("getColor", ID_GET_COLOR, 0);
     }
 
     public void setColor(int c) {
-        _getBackground().setColor(c);
+        bg.setColor(c);
     }
 
     public int getColor() {
-        return _getBackground().getColor();
+        return bg.getColor();
     }
 
     public void evalNative(int id, JsArray stack, int sp, int parCount) {

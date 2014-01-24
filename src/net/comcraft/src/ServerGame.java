@@ -350,7 +350,12 @@ public class ServerGame implements LevelInfo, ChunkLoader {
     }
 
     public void handlePlayerMove(int playerId, Vec3D newPos) {
+        ignoreChange = true;
         EntityPlayer player = (EntityPlayer) onlinePlayers.get(new Integer(playerId));
+        Vec3D oldPos = player.getPosition();
+        cc.world.setBlockID((int) oldPos.x, (int) oldPos.y, (int) oldPos.z, 0);
+        ignoreChange = true;
+        cc.world.setBlockID((int) newPos.x, (int) newPos.y, (int) newPos.z, 255);
         player.xPos = newPos.x;
         player.yPos = newPos.y;
         player.zPos = newPos.z;
@@ -363,6 +368,8 @@ public class ServerGame implements LevelInfo, ChunkLoader {
 
     public void handlePlayerQuit(int playerId) {
         EntityPlayer player = (EntityPlayer) onlinePlayers.get(new Integer(playerId));
+        Vec3D pos = player.getPosition();
+        cc.world.setBlockID((int) pos.x, (int) pos.y, (int) pos.z, 0);
         onlinePlayers.remove(player);
     }
 

@@ -12,7 +12,7 @@ public class Transform extends JsObject {
 
     public Transform() {
         super(OBJECT_PROTOTYPE);
-        this.tr = new javax.microedition.m3g.Transform();
+        tr = new javax.microedition.m3g.Transform();
         addNative("postTranslate", ID_POST_TRANSLATE, 3);
         addNative("postRotate", ID_POST_ROTATE, 4);
         addNative("postScale", ID_POST_SCALE, 3);
@@ -21,23 +21,23 @@ public class Transform extends JsObject {
 
     public Transform(javax.microedition.m3g.Transform transform) {
         this();
-        this.tr = transform;
+        tr = transform;
     }
 
     public void postTranslate(float arg0, float arg1, float arg2) {
-        this.tr.postTranslate(arg0, arg1, arg2);
+        tr.postTranslate(arg0, arg1, arg2);
     }
 
     public void postRotate(float arg0, float arg1, float arg2, float arg3) {
-        this.tr.postRotate(arg0, arg1, arg2, arg3);
+        tr.postRotate(arg0, arg1, arg2, arg3);
     }
 
     public void set(Transform transform) {
-        this.tr.set(transform._getTransform());
+        tr.set(transform._getTransform());
     }
 
     public void postScale(float arg0, float arg1, float arg2) {
-        this.tr.postScale(arg0, arg1, arg2);
+        tr.postScale(arg0, arg1, arg2);
     }
 
     public void evalNative(int id, JsArray stack, int sp, int parCount) {

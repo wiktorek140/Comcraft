@@ -3,11 +3,13 @@ package net.comcraft.src;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Vector;
+
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 import javax.microedition.lcdui.game.Sprite;
 import javax.microedition.m3g.Image2D;
 import javax.microedition.m3g.Texture2D;
+
 import net.comcraft.client.Comcraft;
 
 public final class TextureManager {
@@ -16,17 +18,20 @@ public final class TextureManager {
     private Hashtable loadedImagesList;
     private Texture2D[] terrainTexturesList;
     private Image[] itemImagesList;
+    private Texture2D[] skinTexturesList;
 
     public TextureManager(Comcraft cc) {
         this.cc = cc;
         loadedImagesList = new Hashtable(50);
         terrainTexturesList = new Texture2D[512];
         itemImagesList = new Image[512];
+        skinTexturesList = new Texture2D[6];
     }
 
     public void releaseTextures() {
         loadedImagesList.clear();
         terrainTexturesList = null;
+        skinTexturesList = null;
     }
 
     public void reloadTextures() {
@@ -35,6 +40,7 @@ public final class TextureManager {
 
         loadTerrainTextures();
         loadItemTextures();
+        loadSkinTextures();
     }
 
     private Vector getUsedItemTexturesList() {
@@ -111,8 +117,8 @@ public final class TextureManager {
             items = Image.createImage(cc.texturePackList.getResourceAsStream("gui/items.png"));
             items2 = Image.createImage(cc.texturePackList.getResourceAsStream("gui/items_cc.png"));
         } catch (IOException ex) {
-            //#debug
-//#             ex.printStackTrace();
+            // #debug
+            // # ex.printStackTrace();
             throw new ComcraftException("Can't load terrain image!", ex);
         }
 
@@ -135,9 +141,9 @@ public final class TextureManager {
                 itemImagesList[y * 16 + x] = background;
             }
         }
-        
+
         size = items2.getWidth() / 16;
-        
+
         for (int y = 0; y < 16; ++y) {
             for (int x = 0; x < 16; ++x) {
                 if (!usedTextures.contains(new Integer(256 + y * 16 + x))) {
@@ -167,8 +173,8 @@ public final class TextureManager {
             terrain = Image.createImage(cc.texturePackList.getResourceAsStream("terrain.png"));
             terrain1 = Image.createImage(cc.texturePackList.getResourceAsStream("terrain_cc.png"));
         } catch (IOException ex) {
-            //#debug
-//#             ex.printStackTrace();
+            // #debug
+            // # ex.printStackTrace();
             throw new ComcraftException("Can't load terrain image!", ex);
         }
 
@@ -233,7 +239,7 @@ public final class TextureManager {
         loadImage("gui/button_exit.png");
         loadImage("gui/comcraft_logo.png");
         loadImageLandscape("gui/loading_sprite.png");
-//        loadImage("gui/button_load_all.png");
+        // loadImage("gui/button_load_all.png");
         loadImage("gui/button_quick_menu.png");
         loadImage("gui/button_screenshot.png");
         loadImageLandscape("gui/locked_item.png");
@@ -271,6 +277,10 @@ public final class TextureManager {
         return terrainTexturesList[index];
     }
 
+    public Texture2D getSkinTexture(int index) {
+        return skinTexturesList[index];
+    }
+
     public Image getItemTexture(int index) {
         if (index >= 512) {
             return cc.render.renderBlockPreview.getBlockPreviewImage(index - 512);
@@ -284,19 +294,48 @@ public final class TextureManager {
 
         if (image == null) {
             try {
-                //#debug
-//#                 System.out.println("image not found: " + path);
+                // #debug
+                // # System.out.println("image not found: " + path);
 
                 image = Image.createImage(cc.texturePackList.getResourceAsStream(path));
 
                 return image;
             } catch (IOException ex) {
-                //#debug
-//#                 ex.printStackTrace();
+                // #debug
+                // # ex.printStackTrace();
                 throw new ComcraftException(ex);
             }
         } else {
             return image;
+        }
+    }
+
+    private void loadSkinTextures() {
+        Image skin = null;
+
+        try {
+            skin = Image.createImage(cc.texturePackList.getResourceAsStream("skin.png"));
+        } catch (IOException ex) {
+            // #debug
+            // # ex.printStackTrace();
+            throw new ComcraftException("Can't load skin image!", ex);
+        }
+
+        int size = skin.getWidth() / 3;
+
+        for (int y = 0; y < 2; ++y) {
+            for (int x = 0; x < 3; ++x) {
+                Image image = Image.createImage(skin, x * size, y * size, size, size * (y + 1), Sprite.TRANS_MIRROR);
+
+                Image2D image2D = new Image2D(Image2D.RGBA, image);
+
+                Texture2D texture2D = new Texture2D(image2D);
+                texture2D.setFiltering(Texture2D.FILTER_BASE_LEVEL, Texture2D.FILTER_NEAREST);
+                texture2D.setWrapping(Texture2D.WRAP_REPEAT, Texture2D.WRAP_REPEAT);
+                texture2D.setBlending(Texture2D.FUNC_REPLACE);
+
+                skinTexturesList[y * 2 + x] = texture2D;
+            }
         }
     }
 }
