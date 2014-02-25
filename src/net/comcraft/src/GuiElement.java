@@ -2,7 +2,13 @@ package net.comcraft.src;
 
 import javax.microedition.lcdui.Graphics;
 
-public class GuiElement {
+import com.google.minijoe.sys.JsObject;
+
+public abstract class GuiElement extends JsObject {
+
+    public GuiElement(JsObject __proto__) {
+        super(__proto__);
+    }
 
     public static void drawStringWithShadow(Graphics g, String string, int x, int y, int anchor) {
         int rColor = g.getRedComponent();

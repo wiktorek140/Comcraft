@@ -18,7 +18,11 @@
 package net.comcraft.src;
 
 import java.util.Calendar;
+
 import javax.microedition.lcdui.Graphics;
+
+import com.google.minijoe.sys.JsArray;
+
 import net.comcraft.client.Comcraft;
 
 public class GuiMainMenu extends GuiScreen implements GuiYesNoHost {
@@ -57,6 +61,10 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoHost {
         elementsList.addElement(new GuiButton(cc, 1, centerX, calcBtnY(2), cc.langBundle.getText("GuiMainMenu.buttonTexturepacks")));
         elementsList.addElement(new GuiButton(cc, 5, centerX, calcBtnY(3), cc.langBundle.getText("GuiMainMenu.buttonMods")));
         elementsList.addElement(new GuiButton(cc, 2, centerX, calcBtnY(4), cc.langBundle.getText("GuiMainMenu.buttonOptions")));
+        JsArray eList = ModArray.toArray(elementsList);
+        ModGlobals.event.runEvent("GuiMainMenu.initGui", new Object[] { eList });
+        elementsList = ModArray.toVector(eList);
+        System.out.println(elementsList);
         elementsList.addElement(new GuiButton(cc, 3, centerX, calcBtnY(5), cc.langBundle.getText("GuiMainMenu.buttonInfo")));
         elementsList.addElement(new GuiButton(cc, 4, centerX, calcBtnY(6), cc.langBundle.getText("GuiMainMenu.buttonQuit")));
     }

@@ -26,6 +26,7 @@ public class ModLoader {
     private Vector Mods;
     private boolean hasInitialized = false;
     private Hashtable resourcedata;
+    private BaseMod global;
 
     public ModLoader(Comcraft cc) {
         this.cc = cc;
@@ -53,7 +54,7 @@ public class ModLoader {
             ioEx.printStackTrace();
             return;
         }
-        ModGlobals.global = new BaseMod();
+        global = new BaseMod();
         for (int i = 0; i < elements.size(); ++i) {
             String elementName = (String) elements.elementAt(i);
             if (elementName.endsWith("/")) {
@@ -147,7 +148,7 @@ public class ModLoader {
                         int length = dis.readInt();
                         if ((packageName + "." + filename).equals(main) && !isDisabled((String) info[0])) {
                             try {
-                                JsFunction.exec(dis, ModGlobals.global);
+                                JsFunction.exec(dis, global);
                                 info[3] = new Boolean(true);
                             } catch (Exception e) {
                                 e.printStackTrace();

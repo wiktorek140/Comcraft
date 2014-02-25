@@ -3,6 +3,9 @@ package net.comcraft.src;
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 import javax.microedition.lcdui.game.Sprite;
+
+import com.google.minijoe.sys.JsObject;
+
 import net.comcraft.client.Comcraft;
 
 public class GuiButton extends GuiElement {
@@ -25,6 +28,7 @@ public class GuiButton extends GuiElement {
     }
 
     protected GuiButton(Comcraft cc, int id, int x, int y) {
+        super(JsObject.OBJECT_PROTOTYPE);
         this.cc = cc;
         enabled = true;
         drawButton = true;

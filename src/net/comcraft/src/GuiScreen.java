@@ -1,8 +1,12 @@
 package net.comcraft.src;
 
 import java.util.Vector;
+
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
+
+import com.google.minijoe.sys.JsObject;
+
 import net.comcraft.client.Comcraft;
 
 public abstract class GuiScreen extends GuiElement {
@@ -14,6 +18,7 @@ public abstract class GuiScreen extends GuiElement {
     private boolean isInitialized;
 
     public GuiScreen(GuiScreen parentScreen) {
+        super(JsObject.OBJECT_PROTOTYPE);
         this.parentScreen = parentScreen;
         elementsList = new Vector(5);
     }
