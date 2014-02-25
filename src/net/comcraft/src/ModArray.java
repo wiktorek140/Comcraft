@@ -46,4 +46,31 @@ public class ModArray extends JsArray {
         }
         return obj;
     }
+
+    public static JsArray toArray(Object[] values) {
+        JsArray array = new JsArray();
+        array.setSize(values.length);
+        for (int i = 0; i < values.length; i++) {
+            array.setObject(i, values[i]);
+        }
+        return array;
+    }
+
+    public static JsArray toArray(Vector values) {
+        JsArray array = new JsArray();
+        array.setSize(values.size());
+        for (int i = 0; i < values.size(); i++) {
+            array.setObject(i, values.elementAt(i));
+        }
+        return array;
+    }
+
+    public static Vector toVector(JsArray arr) {
+        Vector v = new Vector();
+        v.setSize(arr.size());
+        for (int i = 0; i < arr.size(); i++) {
+            v.setElementAt(arr.getObject(i), i);
+        }
+        return v;
+    }
 }
