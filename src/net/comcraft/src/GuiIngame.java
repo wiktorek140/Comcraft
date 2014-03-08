@@ -312,6 +312,6 @@ public class GuiIngame extends GuiScreen implements GuiTextBoxHost {
             return;
         }
         // Work In Progress
-        ModAPI.event.runEvent("Game.Command", new Object[] { cmd });
+        ModAPI.event.runEvent("Game.Command", new Object[] { cmd, cc.player });
     }
 }

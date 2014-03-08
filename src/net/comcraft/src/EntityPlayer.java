@@ -17,13 +17,19 @@
 
 package net.comcraft.src;
 
+// ModLoader start
+import com.google.minijoe.sys.JsArray;
+import com.google.minijoe.sys.JsObject;
+// ModLoader end
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+
 import javax.microedition.m3g.Transform;
+
 import net.comcraft.client.Comcraft;
 
-public class EntityPlayer {
+public class EntityPlayer extends JsObject { // ModLoader
 
     private final float maxSpeed = 3f;
     private Comcraft cc;
@@ -41,8 +47,20 @@ public class EntityPlayer {
     private AxisAlignedBB boundingBox;
     private ServerGame server = null;
     private Vec3D blockVec;
+    // ModLoader start
+    private static final int ID_SET_PLAYER_ON_WORLD_CENTER = 100;
+    private static final int ID_GET_BOUNDING_BOX = 101;
+    private static final int ID_GET_PLAYER_TRANSFORM = 102;
+    private static final int ID_GET_LOOK_FORW = 103;
+    private static final int ID_GET_LOOK_RIGHT = 104;
+    private static final int ID_GET_LOOK = 105;
+    private static final int ID_GET_LOOK$1 = 106;
+    private static final int ID_GET_POSITION = 107;
+    private static final int ID_ROTATE = 108;
+    // ModLoader end
 
     public EntityPlayer(Comcraft cc) {
+        super(JsObject.OBJECT_PROTOTYPE); // ModLoader
         this.cc = cc;
         inventory = new InventoryPlayer();
         vVec = new Vec3D();
@@ -54,6 +72,26 @@ public class EntityPlayer {
         w = aspect * h;
         boundingBox = new AxisAlignedBB(0, 0, 0, 0, 0, 0);
         blockVec = new Vec3D(xPos, yPos, zPos);
+        // ModLoader start
+        // Methods
+        addNative("setPlayerOnWorldCenter", ID_SET_PLAYER_ON_WORLD_CENTER, 1);
+        addNative("getBoundingBox", ID_GET_BOUNDING_BOX, 0);
+        addNative("getPlayerTransform", ID_GET_PLAYER_TRANSFORM, 0);
+        addNative("getLookForw", ID_GET_LOOK_FORW, 0);
+        addNative("getLookRight", ID_GET_LOOK_RIGHT, 0);
+        addNative("getLook", ID_GET_LOOK, 0);
+        addNative("getLook1", ID_GET_LOOK$1, 2);
+        addNative("getPosition", ID_GET_POSITION, 0);
+        addNative("rotate", ID_ROTATE, 2);
+        // Properties
+        addVar("inventory", inventory);
+        addVar("xPos", new Float(xPos));
+        addVar("yPos", new Float(yPos));
+        addVar("zPos", new Float(zPos));
+        addVar("rotationYaw", new Float(rotationYaw));
+        addVar("rotationPitch", new Float(rotationPitch));
+        addVar("commandsAllowed", new Boolean(commandsAllowed));
+        // ModLoader end
     }
 
     public EntityPlayer(Comcraft cc, ServerGame server) {
@@ -294,4 +332,40 @@ public class EntityPlayer {
 
         dataOutputStream.writeBoolean(commandsAllowed);
     }
+    // ModLoader start
+    public void evalNative(int id, JsArray stack, int sp, int parCount) {
+        switch(id) {
+        case ID_SET_PLAYER_ON_WORLD_CENTER:
+            setPlayerOnWorldCenter(stack.getInt(sp+2));
+            break;
+        case ID_GET_BOUNDING_BOX:
+            stack.setObject(sp,getBoundingBox());
+            break;
+        case ID_GET_PLAYER_TRANSFORM:
+            stack.setObject(sp,getPlayerTransform());
+            break;
+        case ID_GET_LOOK_FORW:
+            stack.setObject(sp,getLookForw());
+            break;
+        case ID_GET_LOOK_RIGHT:
+            stack.setObject(sp,getLookRight());
+            break;
+        case ID_GET_LOOK:
+            stack.setObject(sp,getLook());
+            break;
+        case ID_GET_LOOK$1:
+            stack.setObject(sp,getLook(stack.getInt(sp+2), stack.getInt(sp+3)));
+            break;
+        case ID_GET_POSITION:
+            stack.setObject(sp,getPosition());
+            break;
+        case ID_ROTATE:
+            rotate((float) stack.getNumber(sp+2), (float) stack.getNumber(sp+3));
+            break;
+
+            default:
+                super.evalNative(id, stack, sp, parCount);
+        }
+    }
+    // ModLoader end
 }
