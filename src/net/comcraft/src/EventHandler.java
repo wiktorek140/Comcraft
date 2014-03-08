@@ -12,13 +12,25 @@ public class EventHandler {
     private Hashtable events;
 
     public EventHandler(String[] eventnames) {
-        events = new Hashtable();
+        this();
         for (int i = 0; i < eventnames.length; i++) {
-            Vector[] v = new Vector[2];
-            v[0] = new Vector();
-            v[1] = new Vector();
-            events.put(eventnames[i], v);
+            addEventName(eventnames[i]);
         }
+    }
+
+    public EventHandler() {
+        events = new Hashtable();
+    }
+
+    protected void addEventName(String name) {
+        Vector[] v = new Vector[2];
+        v[0] = new Vector();
+        v[1] = new Vector();
+        events.put(name, v);
+    }
+
+    public boolean hasEvent(String name) {
+        return events.containsKey(name);
     }
 
     public void runEvent(String name, Object[] params) {
@@ -45,8 +57,13 @@ public class EventHandler {
                     stack.setObject(i + 3, params[i]);
                 }
             }
-            fn.eval(stack, 1, params.length);
-            event[1].setElementAt(stack.getObject(1), event[0].indexOf(fn));
+            try {
+                fn.eval(stack, 1, params.length);
+                event[1].setElementAt(stack.getObject(1), ce);
+            } catch (Exception e1) {
+                System.err.println(e1.getMessage());
+                e1.printStackTrace();
+            }
         }
     }
 
@@ -55,10 +72,27 @@ public class EventHandler {
     }
 
     public void bindEvent(String name, JsFunction function) {
+        if (name == null || function == null) {
+            return;
+        }
         if (!events.containsKey(name)) {
             throw new JsException("Unknown Event key " + name);
         }
         Vector[] e = (Vector[]) events.get(name);
+        e[0].addElement(function);
+        e[1].addElement(null);
+    }
+
+    public void setEvent(String name, JsFunction function) {
+        if (name == null || function == null) {
+            return;
+        }
+        if (!events.containsKey(name)) {
+            throw new JsException("Unknown Event key " + name);
+        }
+        Vector[] e = (Vector[]) events.get(name);
+        e[0].removeAllElements();
+        e[1].removeAllElements();
         e[0].addElement(function);
         e[1].addElement(null);
     }
