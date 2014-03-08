@@ -15,6 +15,8 @@ public class ModAPI extends JsObject implements JsObjectFactory {
     private static final int ID_IMPORT = 100;
 
     // Object ID's
+    private static final int FACTORY_ID_VEC3D = 0;
+    private static final int FACTORY_ID_AABB = 1;
 
     private static ModAPI instance = null;
     public static final EventHandlerAPI event = new EventHandlerAPI();
@@ -59,6 +61,8 @@ public class ModAPI extends JsObject implements JsObjectFactory {
 
     /** Constructible objects */
     private void addInstantiableObjects() {
+        addVar("AxisAlignedBB", new JsFunction(this, FACTORY_ID_AABB, AxisAlignedBB.AABB_PROTOTYPE, AxisAlignedBB.ID_CONSTRUCT, 6));
+		addVar("Vec3D", new JsFunction(this, FACTORY_ID_VEC3D, OBJECT_PROTOTYPE, Vec3D.ID_CONSTRUCT, 3));
     }
 
     /** String names for events bindable in EventHandlerAPI */
@@ -94,6 +98,10 @@ public class ModAPI extends JsObject implements JsObjectFactory {
     /** Handle all API new instance calls (i.e 'new <ObjectName>()') */
     public JsObject newInstance(int type) {
         switch (type) {
+        case FACTORY_ID_VEC3D:
+            return new Vec3D();
+        case FACTORY_ID_AABB:
+            return new AxisAlignedBB();
         default:
             throw new IllegalArgumentException();
         }
