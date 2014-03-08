@@ -75,7 +75,7 @@ public class WorldGenerator {
         } else {
             chunkGenerator = new ChunkGeneratorNormal(seed, generateTrees);
         }
-        ModGlobals.event.runEvent("World.Generate", new Object[] { new Boolean(isFlat), chunkGenerator });
+        ModAPI.event.runEvent("World.Generate", new Object[] { new Boolean(isFlat), chunkGenerator });
 
         this.allowcommands = allowcommands;
         worldSaveType = new WorldSaveType(saveHandler.getSavePath());

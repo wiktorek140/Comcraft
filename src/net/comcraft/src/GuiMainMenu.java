@@ -62,7 +62,7 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoHost {
         elementsList.addElement(new GuiButton(cc, 5, centerX, calcBtnY(3), cc.langBundle.getText("GuiMainMenu.buttonMods")));
         elementsList.addElement(new GuiButton(cc, 2, centerX, calcBtnY(4), cc.langBundle.getText("GuiMainMenu.buttonOptions")));
         JsArray eList = ModArray.toArray(elementsList);
-        ModGlobals.event.runEvent("GuiMainMenu.initGui", new Object[] { eList });
+        ModAPI.event.runEvent("GuiMainMenu.initGui", new Object[] { eList });
         elementsList = ModArray.toVector(eList);
         System.out.println(elementsList);
         elementsList.addElement(new GuiButton(cc, 3, centerX, calcBtnY(5), cc.langBundle.getText("GuiMainMenu.buttonInfo")));

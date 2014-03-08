@@ -43,7 +43,7 @@ public class EventHandler {
         }
         Vector e = event[0];
         JsArray stack = new JsArray();
-        stack.setObject(0, ModGlobals.global); // Global scope
+        stack.setObject(0, ModAPI.getInstance()); // Global scope
         for (int ce = 0; ce < e.size(); ce++) {
             JsFunction fn = (JsFunction) e.elementAt(ce);
             stack.setObject(1, fn); // Function

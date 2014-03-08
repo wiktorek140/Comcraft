@@ -10,7 +10,10 @@ import java.io.InputStream;
 import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
 
+import com.google.minijoe.sys.JsArray;
+import com.google.minijoe.sys.JsException;
 import com.google.minijoe.sys.JsFunction;
+import com.google.minijoe.sys.JsObject;
 import com.java4ever.apime.io.GZIP;
 
 import net.comcraft.client.Comcraft;
@@ -26,7 +29,7 @@ public class ModLoader {
     private Vector Mods;
     private boolean hasInitialized = false;
     private Hashtable resourcedata;
-    private BaseMod global;
+    private Hashtable packages;
 
     public ModLoader(Comcraft cc) {
         this.cc = cc;
@@ -54,7 +57,8 @@ public class ModLoader {
             ioEx.printStackTrace();
             return;
         }
-        global = new BaseMod();
+        packages = new Hashtable(elements.size() / 2);
+        ModAPI.getInstance(cc); // Prepare the API
         for (int i = 0; i < elements.size(); ++i) {
             String elementName = (String) elements.elementAt(i);
             if (elementName.endsWith("/")) {
@@ -140,25 +144,18 @@ public class ModLoader {
                 for (int i = 0; i < l; i++) {
                     String packageName = dis.readUTF();
                     int flen = dis.read();
+                    Hashtable files = new Hashtable(flen / 2);
                     for (int x = 0; x < flen; x++) {
                         String filename = dis.readUTF();
                         if (version >= 4 && (flags & 1) == 1) {
                             dis.readUTF(); // Skip past source code
                         }
                         int length = dis.readInt();
-                        if ((packageName + "." + filename).equals(main) && !isDisabled((String) info[0])) {
-                            try {
-                                JsFunction.exec(dis, global);
-                                info[3] = new Boolean(true);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                info[2] = e.getMessage() + "\n\nIn file " + packageName + "." + filename;
-                            }
-                        } else {
-                            dis.read(new byte[length]);
-                            // Currently only the main class is executed
-                        }
+                        byte[] data = new byte[length];
+                        dis.read(data);
+                        files.put(filename, data);
                     }
+                    packages.put(packageName, files);
                 }
                 break;
             case -1:
@@ -168,8 +165,29 @@ public class ModLoader {
                 break;
             }
         }
+        int idx = main.lastIndexOf('.');
+        String mainPackage = main.substring(0, idx);
+        String fileName = main.substring(idx + 1);
+        if (!isDisabled((String) info[0])) {
+            try {
+                executeModInNs(mainPackage, fileName);
+                info[3] = new Boolean(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+                info[2] = e.getMessage() + "\n\nIn file " + mainPackage + "." + fileName;
+            }
+        }
         dis.close();
         return info;
+    }
+
+    public boolean executeModInNs(String package_, String fname) throws Exception {
+        Hashtable pkg;
+        if (packages.containsKey(package_) && (pkg = (Hashtable) packages.get(package_)).containsKey(fname)) {
+            JsFunction.exec(new DataInputStream(new ByteArrayInputStream((byte[]) pkg.get(fname))), ModAPI.getInstance());
+            return true;
+        }
+        return false;
     }
 
     public InputStream getResourceAsStream(String filename) {

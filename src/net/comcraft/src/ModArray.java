@@ -1,5 +1,7 @@
 package net.comcraft.src;
 
+import java.util.Vector;
+
 import com.google.minijoe.sys.JsArray;
 
 public class ModArray extends JsArray {
