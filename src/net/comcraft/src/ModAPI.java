@@ -18,6 +18,7 @@ public class ModAPI extends JsObject implements JsObjectFactory {
     private static final int FACTORY_ID_VEC3D = 0;
     private static final int FACTORY_ID_AABB = 1;
     private static final int FACTORY_ID_INVITEMSTACK = 2;
+    private static final int FACTORY_ID_BLOCK = 3;
 
     private static ModAPI instance = null;
     public static final EventHandlerAPI event = new EventHandlerAPI();
@@ -63,9 +64,10 @@ public class ModAPI extends JsObject implements JsObjectFactory {
     /** Constructible objects */
     private void addInstantiableObjects() {
         addVar("AxisAlignedBB", new JsFunction(this, FACTORY_ID_AABB, AxisAlignedBB.AABB_PROTOTYPE, AxisAlignedBB.ID_CONSTRUCT, 6));
-		addVar("Vec3D", new JsFunction(this, FACTORY_ID_VEC3D, OBJECT_PROTOTYPE, Vec3D.ID_CONSTRUCT, 3));
+        addVar("Vec3D", new JsFunction(this, FACTORY_ID_VEC3D, OBJECT_PROTOTYPE, Vec3D.ID_CONSTRUCT, 3));
         addVar("InvItemStack", new JsFunction(this, FACTORY_ID_INVITEMSTACK, OBJECT_PROTOTYPE, InvItemStack.ID_CONSTRUCT, 2));
-    }
+        addVar("Block", new JsFunction(this, FACTORY_ID_BLOCK, Block.BLOCK_PROTOTYPE, Block.ID_CONSTRUCT, 2));
+   }
 
     /** String names for events bindable in EventHandlerAPI */
     private void addEventHandlerEvents() {
@@ -106,6 +108,8 @@ public class ModAPI extends JsObject implements JsObjectFactory {
             return new AxisAlignedBB();
         case FACTORY_ID_INVITEMSTACK:
             return new InvItemStack();
+        case FACTORY_ID_BLOCK:
+            return new Block();
         default:
             throw new IllegalArgumentException();
         }
