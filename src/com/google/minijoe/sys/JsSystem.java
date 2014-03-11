@@ -187,6 +187,9 @@ public class JsSystem implements JsObjectFactory {
    * Instead, null is converted to 0 and undefined is converted to NaN.
    */  
   public static double toNumber(Object o){
+    if (o instanceof Integer) {
+      return ((Integer) o).doubleValue();
+    }
     if (o instanceof Double) {
       return ((Double) o).doubleValue();
     }
