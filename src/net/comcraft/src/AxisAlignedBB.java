@@ -22,12 +22,12 @@ public final class AxisAlignedBB extends JsObject { // ModLoader
     private static final int ID_COLLIDES_WITH = 101;
     public static final int ID_CONSTRUCT = 102;
     // ModLoader end
-    public static final JsObject AABB_PROTOTYPE = new JsObject(OBJECT_PROTOTYPE)
+    public static final JsObject AABB_PROTOTYPE = new AxisAlignedBB(OBJECT_PROTOTYPE)
         .addNative("getBoundingBox", ID_GET_BOUNDING_BOX, 6)
         .addNative("collidesWith", ID_COLLIDES_WITH, 1);
 
     public AxisAlignedBB(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
-        this(); // ModLoader
+        this(AABB_PROTOTYPE); // ModLoader
         this.minX = minX;
         this.minY = minY;
         this.minZ = minZ;
@@ -36,8 +36,8 @@ public final class AxisAlignedBB extends JsObject { // ModLoader
         this.maxZ = maxZ;
     }
 
-    public AxisAlignedBB() {
-        super(AABB_PROTOTYPE); // ModLoader
+    public AxisAlignedBB(JsObject __proto__) {
+        super(__proto__); // ModLoader
         // ModLoader start
         // Properties
         addVar("minX", new Float(minX));

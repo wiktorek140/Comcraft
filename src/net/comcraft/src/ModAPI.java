@@ -8,6 +8,7 @@ import com.google.minijoe.sys.JsFunction;
 import com.google.minijoe.sys.JsObject;
 import com.google.minijoe.sys.JsObjectFactory;
 import com.google.minijoe.sys.JsSystem;
+import com.simon816.minijoe.nativetypes.Transform;
 
 public class ModAPI extends JsObject implements JsObjectFactory {
 
@@ -19,6 +20,7 @@ public class ModAPI extends JsObject implements JsObjectFactory {
     private static final int FACTORY_ID_AABB = 1;
     private static final int FACTORY_ID_INVITEMSTACK = 2;
     private static final int FACTORY_ID_BLOCK = 3;
+    private static final int FACTORY_ID_TRANSFORM = 4;
 
     private static ModAPI instance = null;
     public static final EventHandlerAPI event = new EventHandlerAPI();
@@ -67,6 +69,7 @@ public class ModAPI extends JsObject implements JsObjectFactory {
         addVar("Vec3D", new JsFunction(this, FACTORY_ID_VEC3D, OBJECT_PROTOTYPE, Vec3D.ID_CONSTRUCT, 3));
         addVar("InvItemStack", new JsFunction(this, FACTORY_ID_INVITEMSTACK, OBJECT_PROTOTYPE, InvItemStack.ID_CONSTRUCT, 2));
         addVar("Block", new JsFunction(this, FACTORY_ID_BLOCK, Block.BLOCK_PROTOTYPE, Block.ID_CONSTRUCT, 2));
+        addVar("Transform", new JsFunction(this, FACTORY_ID_TRANSFORM, Transform.TRANSFORM_PROTOTYPE, Transform.ID_CONSTRUCT, 0));
    }
 
     /** String names for events bindable in EventHandlerAPI */
@@ -108,11 +111,13 @@ public class ModAPI extends JsObject implements JsObjectFactory {
         case FACTORY_ID_VEC3D:
             return new Vec3D();
         case FACTORY_ID_AABB:
-            return new AxisAlignedBB();
+            return new AxisAlignedBB(AxisAlignedBB.AABB_PROTOTYPE);
         case FACTORY_ID_INVITEMSTACK:
             return new InvItemStack();
         case FACTORY_ID_BLOCK:
             return new Block(Block.BLOCK_PROTOTYPE);
+        case FACTORY_ID_TRANSFORM:
+            return new Transform(Transform.TRANSFORM_PROTOTYPE);
         default:
             throw new IllegalArgumentException();
         }
