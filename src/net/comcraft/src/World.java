@@ -40,16 +40,20 @@ public final class World extends JsObject { // ModLoader
     private WorldUpdater worldUpdater;
     public long startTime;
     // ModLoader start
-    private static final int ID_IS_AIR_BLOCK = 100;
-    private static final int ID_GET_BLOCK_ID = 101;
-    private static final int ID_GET_BLOCK_METADATA = 102;
-    private static final int ID_SET_BLOCK_AND_METADATA = 103;
-    private static final int ID_SET_BLOCK_ID = 104;
-    private static final int ID_SET_BLOCK_N = 105;
-    private static final int ID_SET_BLOCK_AND_METADATA_N = 106;
-    private static final int ID_SET_BLOCK_METADATA = 107;
-    private static final int ID_IS_BLOCK_NORMAL = 108;
-    private static final int ID_CAN_BLOCK_BE_PLACED_AT = 109;
+    private static final int ID_GET_BLOCK_BOUNDING_BOX = 100;
+    private static final int ID_IS_AIR_BLOCK = 101;
+    private static final int ID_GET_BLOCK = 102;
+    private static final int ID_GET_BLOCK_ID = 103;
+    private static final int ID_GET_BLOCK_METADATA = 104;
+    private static final int ID_SET_BLOCK_AND_METADATA = 105;
+    private static final int ID_SET_BLOCK_ID = 106;
+    private static final int ID_SET_BLOCK_N = 107;
+    private static final int ID_SET_BLOCK_AND_METADATA_N = 108;
+    private static final int ID_SET_BLOCK_METADATA = 109;
+    private static final int ID_IS_BLOCK_NORMAL = 110;
+    private static final int ID_NOTIFY_BLOCKS = 111;
+    private static final int ID_NOTIFY_BLOCKS_OF_NEIGHBOR_CHANGE = 112;
+    private static final int ID_CAN_BLOCK_BE_PLACED_AT = 113;
     // ModLoader end
 
     public World(Comcraft cc, LevelInfo saveHandler) {
@@ -65,7 +69,9 @@ public final class World extends JsObject { // ModLoader
         startTime = System.currentTimeMillis();
         // ModLoader start
         // Methods
+        addNative("getBlockBoundingBox", ID_GET_BLOCK_BOUNDING_BOX, 3);
         addNative("isAirBlock", ID_IS_AIR_BLOCK, 3);
+        addNative("getBlock", ID_GET_BLOCK, 3);
         addNative("getBlockID", ID_GET_BLOCK_ID, 3);
         addNative("getBlockMetadata", ID_GET_BLOCK_METADATA, 3);
         addNative("setBlockAndMetadata", ID_SET_BLOCK_AND_METADATA, 5);
@@ -74,8 +80,11 @@ public final class World extends JsObject { // ModLoader
         addNative("setBlockAndMetadataN", ID_SET_BLOCK_AND_METADATA_N, 5);
         addNative("setBlockMetadata", ID_SET_BLOCK_METADATA, 4);
         addNative("isBlockNormal", ID_IS_BLOCK_NORMAL, 3);
+        addNative("notifyBlocks", ID_NOTIFY_BLOCKS, 4);
+        addNative("notifyBlocksOfNeighborChange", ID_NOTIFY_BLOCKS_OF_NEIGHBOR_CHANGE, 4);
         addNative("canBlockBePlacedAt", ID_CAN_BLOCK_BE_PLACED_AT, 5);
         // Properties
+        addVar("worldSize", new Integer(worldSize));
         // ModLoader end
     }
 
@@ -343,8 +352,14 @@ public final class World extends JsObject { // ModLoader
     // ModLoader start
     public void evalNative(int id, JsArray stack, int sp, int parCount) {
         switch(id) {
+        case ID_GET_BLOCK_BOUNDING_BOX:
+            stack.setObject(sp, getBlockBoundingBox(stack.getInt(sp + 2), stack.getInt(sp + 3), stack.getInt(sp + 4)));
+            break;
         case ID_IS_AIR_BLOCK:
             stack.setBoolean(sp, isAirBlock(stack.getInt(sp + 2), stack.getInt(sp + 3), stack.getInt(sp + 4)));
+            break;
+        case ID_GET_BLOCK:
+            stack.setObject(sp, getBlock(stack.getInt(sp + 2), stack.getInt(sp + 3), stack.getInt(sp + 4)));
             break;
         case ID_GET_BLOCK_ID:
             stack.setInt(sp, getBlockID(stack.getInt(sp + 2), stack.getInt(sp + 3), stack.getInt(sp + 4)));
@@ -370,9 +385,16 @@ public final class World extends JsObject { // ModLoader
         case ID_IS_BLOCK_NORMAL:
             stack.setBoolean(sp, isBlockNormal(stack.getInt(sp + 2), stack.getInt(sp + 3), stack.getInt(sp + 4)));
             break;
+        case ID_NOTIFY_BLOCKS:
+            notifyBlocks(stack.getInt(sp + 2), stack.getInt(sp + 3), stack.getInt(sp + 4), stack.getInt(sp + 5));
+            break;
+        case ID_NOTIFY_BLOCKS_OF_NEIGHBOR_CHANGE:
+            notifyBlocksOfNeighborChange(stack.getInt(sp + 2), stack.getInt(sp + 3), stack.getInt(sp + 4), stack.getInt(sp + 5));
+            break;
         case ID_CAN_BLOCK_BE_PLACED_AT:
             stack.setBoolean(sp, canBlockBePlacedAt(stack.getInt(sp + 2), stack.getInt(sp + 3), stack.getInt(sp + 4), stack.getInt(sp + 5), stack.getInt(sp + 6)));
             break;
+
         default:
             super.evalNative(id, stack, sp, parCount);
         }
