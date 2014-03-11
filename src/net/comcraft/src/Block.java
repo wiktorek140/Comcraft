@@ -89,8 +89,9 @@ public class Block extends JsObject {
     private static final int ID_ON_BLOCK_ADDED = 154;
     private static final int ID_TICK_BLOCK = 156;
     private static final int ID_GET_BLOCK_MODEL = 158;
+    private static final int ID_GET_BLOCK = 160;
 
-    public static final JsObject BLOCK_PROTOTYPE = new JsObject(OBJECT_PROTOTYPE).addNative("getBlockName", ID_GET_BLOCK_NAME, 0)
+    public static final JsObject BLOCK_PROTOTYPE = new Block(OBJECT_PROTOTYPE).addNative("getBlockName", ID_GET_BLOCK_NAME, 0)
             .addNative("collidesWithPlayer", ID_COLLIDES_WITH_PLAYER, -1).addNative("doesBlockDestroyGrass", ID_DOES_BLOCK_DESTROY_GRASS, -1)
             .addNative("isReplaceableBlock", ID_IS_REPLACEABLE_BLOCK, -1).addNative("isUpdatableBlock", ID_IS_UPDATABLE_BLOCK, -1)
             .addNative("canBePieced", ID_CAN_BE_PIECED, -1).addNative("canBePiecedVertically", ID_CAN_BE_PIECED_VERTICALLY, -1)
@@ -104,14 +105,14 @@ public class Block extends JsObject {
             .addNative("onBlockPlaced", ID_ON_BLOCK_PLACED, -1).addNative("onBlockPlacedBy", ID_ON_BLOCK_PLACED_BY, -1)
             .addNative("onBlockDestroyedByPlayer", ID_ON_BLOCK_DESTROYED_BY_PLAYER, -1).addNative("onNeighborBlockChange", ID_ON_NEIGHBOR_BLOCK_CHANGE, -1)
             .addNative("onBlockRemoval", ID_ON_BLOCK_REMOVAL, -1).addNative("onBlockAdded", ID_ON_BLOCK_ADDED, -1).addNative("tickBlock", ID_TICK_BLOCK, -1)
-            .addNative("getBlockModel", ID_GET_BLOCK_MODEL, -1);
+            .addNative("getBlockModel", ID_GET_BLOCK_MODEL, -1).addNative("getBlock", ID_GET_BLOCK, 2);
 
     protected Block(int id) {
         this(id, 0);
     }
 
     protected Block(int id, int index) {
-        this();
+        this(BLOCK_PROTOTYPE);
         createBlock(id, index != 0 ? new int[] { index } : null);
     }
 
@@ -125,10 +126,12 @@ public class Block extends JsObject {
         blocksList[id] = this;
         IdDropped = blockID = id;
         UsedTexturesList = textures != null ? textures : new int[0];
+        addVar("blockID", new Integer(blockID));
+        addVar("IdDropped", new Integer(IdDropped));
     }
 
-    public Block() {
-        super(BLOCK_PROTOTYPE); // ModLoader
+    public Block(JsObject __proto__) {
+        super(__proto__);
     }
 
     public boolean collidesWithPlayer() {
@@ -156,7 +159,8 @@ public class Block extends JsObject {
     }
 
     public javax.microedition.m3g.Transform getBlockTransform(World world, int x, int y, int z, javax.microedition.m3g.Transform transform, int side) {
-        eh.runEvent("getBlockTransform", new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Transform(transform), new Integer(side) });
+        eh.runEvent("getBlockTransform", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Transform(transform),
+                new Integer(side) });
         Object success = eh.getLastSuccess("getBlockTransform");
         if (success == null) {
             return transform;
@@ -193,7 +197,7 @@ public class Block extends JsObject {
     }
 
     public int getBlockTexture(World world, int x, int y, int z, int side) {
-        eh.runEvent("getBlockTexture", new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Integer(side) });
+        eh.runEvent("getBlockTexture", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Integer(side) });
         Object success = eh.getLastSuccess("getBlockTexture");
         if (success == null) {
             return UsedTexturesList[0];
@@ -210,7 +214,7 @@ public class Block extends JsObject {
     }
 
     public boolean shouldSideBeRendered(World world, int x, int y, int z, int side) {
-        eh.runEvent("shouldSideBeRendered", new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Integer(side) });
+        eh.runEvent("shouldSideBeRendered", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Integer(side) });
         Object success = eh.getLastSuccess("shouldSideBeRendered");
         if (success == null) {
             return !world.isBlockNormal(x, y, z);
@@ -219,7 +223,7 @@ public class Block extends JsObject {
     }
 
     public AxisAlignedBB getCollisionBoundingBoxFromPool(World world, int x, int y, int z) {
-        eh.runEvent("getCollisionBoundingBoxFromPool", new Object[] { world, new Integer(x), new Integer(y), new Integer(z) });
+        eh.runEvent("getCollisionBoundingBoxFromPool", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z) });
         Object success = eh.getLastSuccess("getCollisionBoundingBoxFromPool");
         if (success == null) {
             return AxisAlignedBB.getBoundingBox(x, y, z, x + 1f, y + 1f, z + 1f);
@@ -228,7 +232,7 @@ public class Block extends JsObject {
     }
 
     public boolean canPlaceBlockOnSide(World world, int x, int y, int z, int side) {
-        eh.runEvent("canPlaceBlockOnSide", new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Integer(side) });
+        eh.runEvent("canPlaceBlockOnSide", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Integer(side) });
         Object success = eh.getLastSuccess("canPlaceBlockOnSide");
         if (success == null) {
             return canPlaceBlockAt(world, x, y, z);
@@ -237,7 +241,7 @@ public class Block extends JsObject {
     }
 
     public boolean canPlaceBlockAt(World world, int x, int y, int z) {
-        eh.runEvent("canPlaceBlockAt", new Object[] { world, new Integer(x), new Integer(y), new Integer(z) });
+        eh.runEvent("canPlaceBlockAt", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z) });
         Object success = eh.getLastSuccess("canPlaceBlockAt");
         if (success == null) {
             int i = world.getBlockID(x, y, z);
@@ -247,19 +251,19 @@ public class Block extends JsObject {
     }
 
     public void onBlockPlaced(World world, int x, int y, int z, int side) {
-        eh.runEvent("onBlockPlaced", new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Integer(side) });
+        eh.runEvent("onBlockPlaced", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Integer(side) });
     }
 
     public void onBlockPlacedBy(World world, int x, int y, int z, EntityPlayer entityPlayer) {
-        eh.runEvent("onBlockPlacedBy", new Object[] { world, new Integer(x), new Integer(y), new Integer(z), entityPlayer });
+        eh.runEvent("onBlockPlacedBy", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z), entityPlayer });
     }
 
     public void onBlockDestroyedByPlayer(World world, int x, int y, int z, int metadata) {
-        eh.runEvent("onBlockDestroyedByPlayer", new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Integer(metadata) });
+        eh.runEvent("onBlockDestroyedByPlayer", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Integer(metadata) });
     }
 
     public boolean blockActivated(World world, int x, int y, int z, EntityPlayer entityplayer, InvItemStack itemStack) {
-        eh.runEvent("blockActivated", new Object[] { world, new Integer(x), new Integer(y), new Integer(z), entityplayer, itemStack });
+        eh.runEvent("blockActivated", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z), entityplayer, itemStack });
         Object success = eh.getLastSuccess("blockActivated");
         if (success == null) {
             return false;
@@ -268,15 +272,15 @@ public class Block extends JsObject {
     }
 
     public void onNeighborBlockChange(World world, int x, int y, int z, int blockID) {
-        eh.runEvent("onNeighborBlockChange", new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Integer(blockID) });
+        eh.runEvent("onNeighborBlockChange", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Integer(blockID) });
     }
 
     public void onBlockRemoval(World world, int x, int y, int z) {
-        eh.runEvent("onBlockRemoval", new Object[] { world, new Integer(x), new Integer(y), new Integer(z) });
+        eh.runEvent("onBlockRemoval", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z) });
     }
 
     public void onBlockAdded(World world, int x, int y, int z) {
-        eh.runEvent("onBlockAdded", new Object[] { world, new Integer(x), new Integer(y), new Integer(z) });
+        eh.runEvent("onBlockAdded", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z) });
     }
 
     public String getBlockDestroyingSound() {
@@ -288,7 +292,7 @@ public class Block extends JsObject {
     }
 
     public void tickBlock(World world, int x, int y, int z) {
-        eh.runEvent("tickBlock", new Object[] { world, new Integer(x), new Integer(y), new Integer(z) });
+        eh.runEvent("tickBlock", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z) });
     }
 
     public int[] getUsedTexturesList() {
@@ -296,7 +300,7 @@ public class Block extends JsObject {
     }
 
     public Node getBlockModel(World world, int x, int y, int z) {
-        eh.runEvent("getBlockModel", new Object[] { world, new Integer(x), new Integer(y), new Integer(z) });
+        eh.runEvent("getBlockModel", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z) });
         Object success = eh.getLastSuccess("getBlockModel");
         if (success == null) {
             return null;
@@ -489,18 +493,13 @@ public class Block extends JsObject {
         throw new JsException(fn + "() takes " + s + " " + minarg + " arguments (" + actarg + " given)");
     }
 
-    // ModLoader start
     public void evalNative(int id, JsArray stack, int sp, int parCount) {
         switch (id) {
-        case ID_COLLIDES_WITH_PLAYER:
-            stack.setBoolean(sp, this.collidesWithPlayer());
-            break;
-        case ID_COLLIDES_WITH_PLAYER + 1:
-            collidesWithPlayer = stack.getBoolean(sp);
+        case ID_GET_BLOCK:
+            stack.setObject(sp, getBlock(stack.getString(sp + 2)));
             break;
         case ID_CONSTRUCT:
             ensureArguments("new Block", 2, 3, parCount);
-            System.out.println("new Block");
             if (!stack.isNumber(sp + 2)) {
                 throw new JsException("new Block() argument 1 (blockID) has to be an integer");
             }
@@ -520,6 +519,13 @@ public class Block extends JsObject {
             }
             createBlock(stack.getInt(sp + 2), textures);
             InvItem.itemsList[blockID] = new InvItemBlock(blockID - 256);
+            break;
+        case ID_COLLIDES_WITH_PLAYER:
+            stack.setBoolean(sp, this.collidesWithPlayer());
+            break;
+        case ID_COLLIDES_WITH_PLAYER + 1:
+            collidesWithPlayer = stack.getBoolean(sp);
+            break;
         case ID_GET_BLOCK_NAME:
             stack.setObject(sp, getBlockName());
             break;
@@ -527,12 +533,13 @@ public class Block extends JsObject {
             stack.setBoolean(sp, doesBlockDestroyGrass());
             break;
         case ID_DOES_BLOCK_DESTROY_GRASS + 1:
+            doesBlockDestroyGrass = stack.getBoolean(sp + 2);
             break;
         case ID_IS_REPLACEABLE_BLOCK:
             stack.setBoolean(sp, isReplaceableBlock());
             break;
         case ID_IS_REPLACEABLE_BLOCK + 1:
-            doesBlockDestroyGrass = stack.getBoolean(sp);
+            isReplaceableBlock = stack.getBoolean(sp);
             break;
         case ID_IS_UPDATABLE_BLOCK:
             stack.setBoolean(sp, isUpdatableBlock());
@@ -612,6 +619,12 @@ public class Block extends JsObject {
         case ID_GET_COLLISION_BOUNDING_BOX_FROM_POOL + 1:
             eh.setEvent("getCollisionBoundingBoxFromPool", (JsFunction) stack.getObject(sp));
             break;
+        case ID_CAN_PLACE_BLOCK_AT:
+            if (stack.size() == 0)
+                stack.setObject(sp, new JsFunction(ID_CAN_PLACE_BLOCK_AT, 4));
+            else
+                stack.setBoolean(sp, canPlaceBlockAt((World) stack.getObject(sp + 2), stack.getInt(sp + 3), stack.getInt(sp + 4), stack.getInt(sp + 5)));
+            break;
         case ID_CAN_PLACE_BLOCK_AT + 1:
             eh.setEvent("canPlaceBlockAt", (JsFunction) stack.getObject(sp));
             break;
@@ -649,7 +662,6 @@ public class Block extends JsObject {
         case ID_GET_BLOCK_TEXTURE:
         case ID_SHOULD_SIDE_BE_RENDERED:
         case ID_GET_COLLISION_BOUNDING_BOX_FROM_POOL:
-        case ID_CAN_PLACE_BLOCK_AT:
         case ID_CAN_PLACE_BLOCK_ON_SIDE:
         case ID_BLOCK_ACTIVATED:
         case ID_ON_BLOCK_PLACED:
@@ -763,7 +775,6 @@ public class Block extends JsObject {
     }
 
     public String toString() {
-        return "[object Block[" + blockID + "]]";
+        return "[object Block {blockName=" + blockName + ", blockID=" + blockID + "}]";
     }
-    // ModLoader end
 }

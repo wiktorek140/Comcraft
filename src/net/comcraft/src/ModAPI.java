@@ -12,7 +12,7 @@ import com.google.minijoe.sys.JsSystem;
 public class ModAPI extends JsObject implements JsObjectFactory {
 
     // Function ID's
-    private static final int ID_IMPORT = 100;
+    private static final int ID_IMPORT = 1000;
 
     // Object ID's
     private static final int FACTORY_ID_VEC3D = 0;
@@ -78,8 +78,11 @@ public class ModAPI extends JsObject implements JsObjectFactory {
         event.addEvent("GuiMainMenu.initGui");
     }
 
-    /** Handle API all function calls */
+    /** Handle all API global function calls */
     public void evalNative(int id, JsArray stack, int sp, int parCount) {
+        if (id < 1000 && id >= 100) {
+            throw new IllegalArgumentException("Invalid function call. You may have missed the 'new' keyword");
+        }
         switch (id) {
         case ID_IMPORT:
             if (parCount < 2) {
@@ -109,7 +112,7 @@ public class ModAPI extends JsObject implements JsObjectFactory {
         case FACTORY_ID_INVITEMSTACK:
             return new InvItemStack();
         case FACTORY_ID_BLOCK:
-            return new Block();
+            return new Block(Block.BLOCK_PROTOTYPE);
         default:
             throw new IllegalArgumentException();
         }
