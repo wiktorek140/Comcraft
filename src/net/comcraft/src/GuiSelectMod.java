@@ -54,7 +54,7 @@ public final class GuiSelectMod extends GuiScreenSlotHost {
         }
         if (guiButton.id == 0) {
             // Info
-            String text = selectedmod.getModInfo();
+            String text = selectedmod.info;
             cc.displayGuiScreen(new GuiModInfo(this, text));
         } else if (guiButton.id == 1) {
             // Back
