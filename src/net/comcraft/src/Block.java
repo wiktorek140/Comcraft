@@ -729,13 +729,16 @@ public class Block extends JsObject {
             blockDestroyingSound = (String) v;
 
         v = properties.getObject("getBlockVertexBufferPieced");
-        BlockVertexBufferPieced = (VertexBuffer[][][][]) v;
+        if (v != null)
+            BlockVertexBufferPieced = (VertexBuffer[][][][]) v;
 
         v = properties.getObject("getBlockVertexBufferSided");
-        BlockVertexBufferSided = (VertexBuffer[]) v;
+        if (v != null)
+            BlockVertexBufferSided = (VertexBuffer[]) v;
 
         v = properties.getObject("getBlockIndexBuffer");
-        BlockIndexBuffer = (IndexBuffer) v;
+        if (v != null)
+            BlockIndexBuffer = (IndexBuffer) v;
 
         // Function properties
         eh.setEvent("getBlockTransform", (JsFunction) properties.getObject("getBlockTransform"));

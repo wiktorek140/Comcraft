@@ -65,7 +65,7 @@ public final class Comcraft implements Runnable {
         g = null;
         currentScreen = null;
         textureProvider = null;
-        modLoader=new ModLoader(this);
+        modLoader = new ModLoader(this);
         textureProvider = new TextureManager(this);
         texturePackList = new TexturePackList(this);
         world = null;

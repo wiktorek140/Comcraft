@@ -336,18 +336,17 @@ public final class World extends JsObject { // ModLoader
     }
 
     public boolean canBlockBePlacedAt(int id, int x, int y, int z, int side) {
-        getBlockID(x, y, z);
-        Block block1 = Block.blocksList[id];
+        Block block = Block.blocksList[id];
 
-        if (block1 != null) {
-            AxisAlignedBB axisalignedbb = block1.getCollisionBoundingBoxFromPool(this, x, y, z);
+        if (block != null) {
+            AxisAlignedBB axisalignedbb = block.getCollisionBoundingBoxFromPool(this, x, y, z);
 
             if (cc.player.getBoundingBox().collidesWith(axisalignedbb)) {
                 return false;
             }
         }
 
-        return id > 0 && block1.canPlaceBlockOnSide(this, x, y, z, side);
+        return id > 0 && block.canPlaceBlockOnSide(this, x, y, z, side);
     }
     // ModLoader start
     public void evalNative(int id, JsArray stack, int sp, int parCount) {
