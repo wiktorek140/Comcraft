@@ -1,26 +1,37 @@
 package net.comcraft.src;
 
+import com.google.minijoe.sys.JsArray;
+import com.google.minijoe.sys.JsException;
+import com.google.minijoe.sys.JsFunction;
+
 import java.util.Vector;
 
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 
-import com.google.minijoe.sys.JsObject;
-
 import net.comcraft.client.Comcraft;
 
 public abstract class GuiScreen extends GuiElement {
-
+    protected EventHandler eh = new EventHandler(new String[] { "initGui", "handleGuiAction" });
     protected Comcraft cc;
     protected Vector elementsList;
     protected GuiButton selectedButton;
     protected GuiScreen parentScreen;
     private boolean isInitialized;
+    private String GuiName = "Screen";
 
-    public GuiScreen(GuiScreen parentScreen) {
-        super(JsObject.OBJECT_PROTOTYPE);
+    private static final int ID_INIT_GUI = 101;
+    private static final int ID_IS_GUI = 103;
+    private static final int ID_ADD_ACTION_HANDLER = 105;
+
+    public GuiScreen(GuiScreen parentScreen, String guiName) {
+        super();
+        GuiName = guiName;
         this.parentScreen = parentScreen;
         elementsList = new Vector(5);
+        addNative("initGui", ID_INIT_GUI, -1);
+        addNative("isGui", ID_IS_GUI, 1);
+        addNative("addGuiActionHandler", ID_ADD_ACTION_HANDLER, 1);
     }
 
     protected abstract void customDrawScreen();
@@ -54,10 +65,15 @@ public abstract class GuiScreen extends GuiElement {
 
     public void initGuiScreen(Comcraft cc) {
         this.cc = cc;
+        addVar("cc", cc);
         elementsList.removeAllElements();
 
         initGui();
+        JsArray JsElementsList;
         initTouchOrKeyboard();
+        addVar("elementsList", JsElementsList = ModArray.toArray(elementsList));
+        eh.runEvent("initGui", this, null);
+        elementsList = ModArray.toVector(JsElementsList);
 
         isInitialized = true;
     }
@@ -257,5 +273,33 @@ public abstract class GuiScreen extends GuiElement {
 
     public final boolean isScreenInitialized() {
         return isInitialized;
+    }
+
+    public void evalNative(int id, JsArray stack, int sp, int parCount) {
+        switch (id) {
+        case ID_INIT_GUI:
+            break;
+        case ID_INIT_GUI + 1:
+            Object fn = stack.getObject(sp);
+            if (fn instanceof JsFunction) {
+                eh.bindEventOnce("initGui", (JsFunction) fn);
+            }
+            break;
+        case ID_IS_GUI:
+            stack.setBoolean(sp, GuiName.equals(stack.getString(sp + 2)));
+            break;
+        case ID_ADD_ACTION_HANDLER:
+            if (parCount < 1) {
+                throw new JsException("[GuiScreen.addGuiActionHandler] missing handler argument");
+            }
+            Object handle = stack.getObject(sp + 2);
+            if (!(handle instanceof JsFunction)) {
+                throw new JsException("[GuiScreen.addGuiActionHandler] handler must be a function");
+            }
+            eh.bindEventOnce("handleGuiAction", (JsFunction) handle);
+            break;
+        default:
+            super.evalNative(id, stack, sp, parCount);
+        }
     }
 }

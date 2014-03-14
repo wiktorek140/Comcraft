@@ -3,8 +3,6 @@ package net.comcraft.src;
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 
-import com.google.minijoe.sys.JsObject;
-
 import net.comcraft.client.Comcraft;
 
 public abstract class GuiSlot extends GuiElement {
@@ -22,7 +20,6 @@ public abstract class GuiSlot extends GuiElement {
     private boolean handleInput;
 
     public GuiSlot(GuiScreenSlotHost guiScreenSlotHost) {
-        super(JsObject.OBJECT_PROTOTYPE);
         this.guiScreenSlotHost = guiScreenSlotHost;
         cc = null;
         handleInput = true;

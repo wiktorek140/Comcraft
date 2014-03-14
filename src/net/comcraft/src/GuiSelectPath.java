@@ -10,7 +10,7 @@ public class GuiSelectPath extends GuiScreenSlotHost implements GuiYesNoHost {
     private String memoryCardRoot;
 
     public GuiSelectPath(GuiScreen parentScreen) {
-        super(parentScreen);
+        super(parentScreen, "SelectPath");
         guiSlot = new GuiSlotSelectPath(this);
         fileBrowser = new FileBrowser();
     }

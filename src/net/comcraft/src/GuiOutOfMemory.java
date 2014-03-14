@@ -10,7 +10,7 @@ public class GuiOutOfMemory extends GuiScreen {
     private String errorMessage;
 
     public GuiOutOfMemory(OutOfMemoryError ex) {
-        super(null);
+        super(null, "OutOfMemory");
 
         errorClassName = ex.getClass().getName();
         errorMessage = ex.getMessage();

@@ -3,6 +3,7 @@ package net.comcraft.src;
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 import javax.microedition.lcdui.game.Sprite;
+
 import net.comcraft.client.Comcraft;
 
 public class GuiQuickMenu extends GuiScreen {
@@ -13,7 +14,7 @@ public class GuiQuickMenu extends GuiScreen {
     private Graphics ccGraphics;
 
     public GuiQuickMenu() {
-        super(null);
+        super(null, "QuickMenu");
     }
 
     public void onScreenDisplay() {
@@ -86,6 +87,8 @@ public class GuiQuickMenu extends GuiScreen {
         if (!guiButton.enabled) {
             return;
         }
+
+        eh.runEvent("handleGuiAction", this, new Object[] { guiButton });
 
         if (guiButton.getId() == 0) {
             cc.displayGuiScreen(null);

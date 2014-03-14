@@ -19,7 +19,7 @@ public class GuiDialog extends GuiScreen {
     private GuiDialogHost dialogHost;
     
     public GuiDialog(GuiDialogHost dialogHost, String displayedString) {
-        super(null);
+        super(null, "Dialog");
         
         this.dialogHost = dialogHost;
         this.displayedString = displayedString;

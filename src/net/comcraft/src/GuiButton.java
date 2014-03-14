@@ -4,6 +4,8 @@ import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 import javax.microedition.lcdui.game.Sprite;
 
+import com.google.minijoe.sys.JsArray;
+import com.google.minijoe.sys.JsException;
 import com.google.minijoe.sys.JsObject;
 
 import net.comcraft.client.Comcraft;
@@ -20,6 +22,12 @@ public class GuiButton extends GuiElement {
     public boolean drawButton;
     private Image buttonImage;
 
+    private static final int ID_GET_BUTTON_HEIGHT = 150;
+    private static final int ID_GET_BUTTON_WIDTH = 151;
+    private static final int ID_GET_ID = 152;
+    public final static JsObject GUIBUTTON_PROTOTYPE = new GuiButton(null).addNative("buttonHeight", ID_GET_BUTTON_HEIGHT, 0)
+            .addNative("buttonWidth", ID_GET_BUTTON_WIDTH, 0).addNative("getId", ID_GET_ID, 0);
+
     public GuiButton(Comcraft cc, int id, int x, int y, String displayString) {
         this(cc, id, x, y);
 
@@ -27,14 +35,20 @@ public class GuiButton extends GuiElement {
         initButtonSprite();
     }
 
+    /** Constructor for Java */
     protected GuiButton(Comcraft cc, int id, int x, int y) {
-        super(JsObject.OBJECT_PROTOTYPE);
-        this.cc = cc;
-        enabled = true;
-        drawButton = true;
+        this(cc);
         this.id = id;
         this.xPos = x;
         this.yPos = y;
+    }
+
+    /** Constructor for JavaScript */
+    public GuiButton(Comcraft cc) {
+        super(GUIBUTTON_PROTOTYPE);
+        this.cc = cc;
+        enabled = true;
+        drawButton = true;
     }
 
     public final int getId() {
@@ -114,7 +128,8 @@ public class GuiButton extends GuiElement {
             cc.g.setColor(220, 220, 220);
         }
 
-        drawStringWithShadow(cc.g, getDisplayString(), xPos + getWidth() / 2, y + getHeight() / 2 - cc.g.getFont().getHeight() / 2, Graphics.HCENTER | Graphics.TOP);
+        drawStringWithShadow(cc.g, getDisplayString(), xPos + getWidth() / 2, y + getHeight() / 2 - cc.g.getFont().getHeight() / 2, Graphics.HCENTER
+                | Graphics.TOP);
     }
 
     protected String getDisplayString() {
@@ -167,5 +182,27 @@ public class GuiButton extends GuiElement {
         }
 
         return -1;
+    }
+
+    public void evalNative(int id, JsArray stack, int sp, int parCount) {
+        if (id == ID_CONSTRUCT) {
+            if (parCount < 3) {
+                throw new JsException("[new GuiButton()] not enough arguments provided");
+            }
+            this.id = stack.getInt(sp + 2);
+            xPos = stack.getInt(sp + 3);
+            yPos = stack.getInt(sp + 4);
+            if (parCount >= 4) {
+                displayString = stack.getString(sp + 5);
+            }
+        } else if (id == ID_GET_BUTTON_HEIGHT) {
+            stack.setInt(sp, getButtonHeight());
+        } else if (id == ID_GET_BUTTON_WIDTH) {
+            stack.setInt(sp, getButtonWidth());
+        } else if (id == ID_GET_ID) {
+            stack.setInt(sp, getId());
+        } else {
+            super.evalNative(id, stack, sp, parCount);
+        }
     }
 }

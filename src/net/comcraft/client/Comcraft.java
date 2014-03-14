@@ -21,9 +21,11 @@ import java.io.InputStream;
 import javax.microedition.lcdui.Font;
 import javax.microedition.lcdui.Graphics;
 
+import com.google.minijoe.sys.JsObject;
+
 import net.comcraft.src.*;
 
-public final class Comcraft implements Runnable {
+public final class Comcraft extends JsObject implements Runnable {
 
     public final CanvasComcraft ccCanvas;
     public final ComcraftMIDlet comcraftMIDlet;
@@ -55,6 +57,7 @@ public final class Comcraft implements Runnable {
     public MusicPlayer musicPlayer;
 
     public Comcraft(ComcraftMIDlet comcraftMIDlet, CanvasComcraft ccCanvas) {
+        super(OBJECT_PROTOTYPE);
         this.comcraftMIDlet = comcraftMIDlet;
         this.ccCanvas = ccCanvas;
         ccCanvas.setComcraft(this);
@@ -102,6 +105,8 @@ public final class Comcraft implements Runnable {
 
         System.out.println("Screen width: " + screenWidth);
         System.out.println("Screen height: " + screenHeight);
+        addVar("screenWidth", new Integer(screenWidth));
+        addVar("screenHeight", new Integer(screenHeight));
     }
 
     public void openUrl(String url) {
@@ -389,6 +394,14 @@ public final class Comcraft implements Runnable {
     public void displayGuiScreen(GuiScreen newGuiScreen) {
         if (currentScreen != null) {
             currentScreen.onScreenClosed();
+        }
+
+        if (newGuiScreen != null) {
+            ModAPI.event.runEvent("Comcraft.displayScreen", new Object[] { newGuiScreen });
+            Object retval = ModAPI.event.getLastSuccess("Comcraft.displayScreen");
+            if (retval instanceof GuiScreen) {
+                newGuiScreen = (GuiScreen) retval;
+            }
         }
 
         currentScreen = newGuiScreen;

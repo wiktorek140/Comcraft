@@ -11,7 +11,7 @@ public class GuiServerMessage extends GuiScreen {
     private boolean discon;
 
     public GuiServerMessage(GuiScreen parentScreen, ServerGame sg) {
-        super(parentScreen);
+        super(parentScreen, "ServerMessage");
         this.sg = sg;
         discon = false;
     }

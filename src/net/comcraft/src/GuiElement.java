@@ -6,9 +6,15 @@ import com.google.minijoe.sys.JsObject;
 
 public abstract class GuiElement extends JsObject {
 
+    public GuiElement() {
+        super(OBJECT_PROTOTYPE);
+    }
+
     public GuiElement(JsObject __proto__) {
         super(__proto__);
     }
+
+    public static final int ID_CONSTRUCT = 100;
 
     public static void drawStringWithShadow(Graphics g, String string, int x, int y, int anchor) {
         int rColor = g.getRedComponent();
@@ -51,5 +57,4 @@ public abstract class GuiElement extends JsObject {
             drawStringWithShadow(g, tempString, x, y + (g.getFont().getHeight() + 3) * i, anchor);
         }
     }
-
 }

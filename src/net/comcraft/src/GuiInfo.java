@@ -22,7 +22,7 @@ import net.comcraft.client.Comcraft;
 public class GuiInfo extends GuiScreen {
 
     public GuiInfo(GuiScreen parentScreen) {
-        super(parentScreen);
+        super(parentScreen, "Info");
     }
 
     protected void customDrawScreen() {

@@ -10,7 +10,7 @@ public class GuiYesNo extends GuiScreen {
     private GuiYesNoHost guiYesNoHost;
 
     public GuiYesNo(GuiYesNoHost guiYesNoHost, String displayedString) {
-        super((GuiScreen) guiYesNoHost);
+        super((GuiScreen) guiYesNoHost, "YesNo");
 
         this.guiYesNoHost = guiYesNoHost;
         this.displayedString = displayedString;

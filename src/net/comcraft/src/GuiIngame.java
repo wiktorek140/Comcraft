@@ -22,7 +22,7 @@ public class GuiIngame extends GuiScreen implements GuiTextBoxHost {
     private GuiButton screenshotButton;
 
     public GuiIngame(Comcraft cc) {
-        super(null);
+        super(null, "InGame");
 
         this.cc = cc;
         elementsList = new Vector(6);

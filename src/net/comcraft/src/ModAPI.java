@@ -21,6 +21,7 @@ public class ModAPI extends JsObject implements JsObjectFactory {
     private static final int FACTORY_ID_INVITEMSTACK = 2;
     private static final int FACTORY_ID_BLOCK = 3;
     private static final int FACTORY_ID_TRANSFORM = 4;
+    private static final int FACTORY_ID_GUIBUTTON = 5;
 
     private static ModAPI instance = null;
     public static final EventHandlerAPI event = new EventHandlerAPI();
@@ -70,6 +71,7 @@ public class ModAPI extends JsObject implements JsObjectFactory {
         addVar("InvItemStack", new JsFunction(this, FACTORY_ID_INVITEMSTACK, OBJECT_PROTOTYPE, InvItemStack.ID_CONSTRUCT, 2));
         addVar("Block", new JsFunction(this, FACTORY_ID_BLOCK, Block.BLOCK_PROTOTYPE, Block.ID_CONSTRUCT, 2));
         addVar("Transform", new JsFunction(this, FACTORY_ID_TRANSFORM, Transform.TRANSFORM_PROTOTYPE, Transform.ID_CONSTRUCT, 0));
+        addVar("GuiButton", new JsFunction(this, FACTORY_ID_GUIBUTTON, GuiButton.GUIBUTTON_PROTOTYPE, GuiButton.ID_CONSTRUCT, 3));
    }
 
     /** String names for events bindable in EventHandlerAPI */
@@ -78,7 +80,7 @@ public class ModAPI extends JsObject implements JsObjectFactory {
         event.addEvent("Render.Init");
         event.addEvent("Game.Command");
         event.addEvent("Language.List");
-        event.addEvent("GuiMainMenu.initGui");
+        event.addEvent("Comcraft.displayScreen");
     }
 
     /** Handle all API global function calls */
@@ -118,6 +120,8 @@ public class ModAPI extends JsObject implements JsObjectFactory {
             return new Block(Block.BLOCK_PROTOTYPE);
         case FACTORY_ID_TRANSFORM:
             return new Transform(Transform.TRANSFORM_PROTOTYPE);
+        case FACTORY_ID_GUIBUTTON:
+            return new GuiButton(cc);
         default:
             throw new IllegalArgumentException();
         }

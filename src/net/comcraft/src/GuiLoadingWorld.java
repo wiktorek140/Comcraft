@@ -7,7 +7,7 @@ package net.comcraft.src;
 public class GuiLoadingWorld extends GuiScreen {
 
     public GuiLoadingWorld() {
-        super(null);
+        super(null, "LoadingWorld");
     }
 
     public boolean getSkipRender() {

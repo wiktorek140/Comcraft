@@ -13,7 +13,7 @@ import net.comcraft.client.Comcraft;
 public class GuiOptionsMore extends GuiScreen {
 
     public GuiOptionsMore(GuiOptions parentScreen) {
-        super(parentScreen);
+        super(parentScreen, "OptionsMore");
     }
 
     protected void customDrawScreen() {
@@ -40,6 +40,8 @@ public class GuiOptionsMore extends GuiScreen {
         if (!guiButton.enabled) {
             return;
         }
+
+        eh.runEvent("handleGuiAction", this, new Object[] { guiButton });
 
         if (guiButton.getId() == 7) {
             backToParentScreen();

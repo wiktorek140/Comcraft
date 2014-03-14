@@ -9,8 +9,8 @@ public abstract class GuiScreenSlotHost extends GuiScreen {
     protected GuiSlot guiSlot;
     private int button_index = 0;
 
-    public GuiScreenSlotHost(GuiScreen parentScreen) {
-        super(parentScreen);
+    public GuiScreenSlotHost(GuiScreen parentScreen, String guiName) {
+        super(parentScreen, guiName);
     }
 
     protected abstract void initGuiSlotCustom();

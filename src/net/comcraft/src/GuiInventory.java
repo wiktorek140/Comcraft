@@ -3,6 +3,7 @@ package net.comcraft.src;
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 import javax.microedition.lcdui.game.Sprite;
+
 import net.comcraft.client.Comcraft;
 
 public class GuiInventory extends GuiScreen implements GuiYesNoHost {
@@ -13,7 +14,7 @@ public class GuiInventory extends GuiScreen implements GuiYesNoHost {
     private int yInv;
 
     public GuiInventory() {
-        super(null);
+        super(null, "Inventory");
     }
 
     protected void drawDefaultBackground() {
@@ -51,6 +52,8 @@ public class GuiInventory extends GuiScreen implements GuiYesNoHost {
         if (!guiButton.enabled) {
             return;
         }
+
+        eh.runEvent("handleGuiAction", this, new Object[] { guiButton });
 
         if (guiButton.getId() == 0) {
             touchMovedOrUp(Touch.getX(), Touch.getY());

@@ -30,8 +30,11 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoHost {
     private String currentHelloWord;
     private int logoHeight;
 
+    private static final int ID_CALC_BTN_Y = 150;
+
     public GuiMainMenu() {
-        super(null);
+        super(null, "MainMenu");
+        addNative("calcBtnY", ID_CALC_BTN_Y, 1);
     }
 
     public void onScreenDisplay() {
@@ -61,14 +64,16 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoHost {
         elementsList.addElement(new GuiButton(cc, 1, centerX, calcBtnY(2), cc.langBundle.getText("GuiMainMenu.buttonTexturepacks")));
         elementsList.addElement(new GuiButton(cc, 5, centerX, calcBtnY(3), cc.langBundle.getText("GuiMainMenu.buttonMods")));
         elementsList.addElement(new GuiButton(cc, 2, centerX, calcBtnY(4), cc.langBundle.getText("GuiMainMenu.buttonOptions")));
-        JsArray eList = ModArray.toArray(elementsList);
-        ModAPI.event.runEvent("GuiMainMenu.initGui", new Object[] { eList });
-        elementsList = ModArray.toVector(eList);
-        System.out.println(elementsList);
         elementsList.addElement(new GuiButton(cc, 3, centerX, calcBtnY(5), cc.langBundle.getText("GuiMainMenu.buttonInfo")));
         elementsList.addElement(new GuiButton(cc, 4, centerX, calcBtnY(6), cc.langBundle.getText("GuiMainMenu.buttonQuit")));
     }
 
+    public void evalNative(int id, JsArray stack, int sp, int parCount) {
+        if (id == ID_CALC_BTN_Y)
+            stack.setInt(sp, calcBtnY(stack.getInt(sp + 2)));
+        else
+            super.evalNative(id, stack, sp, parCount);
+    }
     protected int calcBtnY(int i) {
         int startY = 10 + logoHeight + 30;
         return startY + (GuiButton.getButtonHeight() + (int) (GuiButton.getButtonHeight() * 0.35f)) * i;
@@ -94,6 +99,8 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoHost {
         if (!guiButton.enabled) {
             return;
         }
+
+        eh.runEvent("handleGuiAction", this, new Object[] { guiButton });
 
         if (guiButton.id == 0) {
             cc.displayGuiScreen(new GuiSelectWorld(this));

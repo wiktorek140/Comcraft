@@ -19,7 +19,7 @@ public class GuiSelectLanguage extends GuiScreenSlotHost {
     private LanguageSet selectetLanguage;
 
     public GuiSelectLanguage(GuiScreen parentScreen) {
-        super(parentScreen);
+        super(parentScreen, "SelectLanguage");
         guiSlot = new GuiSlotSelectLanguage(this);
 
         initLanguagesList();
