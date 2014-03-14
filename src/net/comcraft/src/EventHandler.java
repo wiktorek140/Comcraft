@@ -87,6 +87,19 @@ public class EventHandler {
         e[1].addElement(null);
     }
 
+    public boolean bindEventOnce(String name, JsFunction function) {
+        if (!hasEvent(name))
+            return false;
+        Vector fnlist = ((Vector[]) events.get(name))[0];
+        for (int i = 0; i < fnlist.size(); i++) {
+            if (((JsFunction) fnlist.elementAt(i)).equals(function)) {
+                return false;
+            }
+        }
+        bindEvent(name, function);
+        return true;
+    }
+
     public void setEvent(String name, JsFunction function) {
         if (name == null || function == null) {
             return;
