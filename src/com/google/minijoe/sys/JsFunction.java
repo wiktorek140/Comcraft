@@ -927,4 +927,12 @@ public class JsFunction extends JsObject {
     buf.append("] }");
     return buf.toString();
   }
+
+  public boolean equals(Object object) {
+    if (object instanceof JsFunction) {
+      JsFunction fn = ((JsFunction) object);
+      return fn.byteCode == byteCode && fn.prototype == prototype;
+    }
+    return super.equals(object);
+  }
 }
