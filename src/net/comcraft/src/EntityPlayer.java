@@ -31,7 +31,7 @@ import net.comcraft.client.Comcraft;
 
 public class EntityPlayer extends JsObject { // ModLoader
 
-    private final float maxSpeed = 3f;
+    private float maxSpeed = 3f;
     private Comcraft cc;
     private Vec3D vVec;
     public InventoryPlayer inventory;
@@ -54,13 +54,28 @@ public class EntityPlayer extends JsObject { // ModLoader
     private static final int ID_GET_LOOK_FORW = 103;
     private static final int ID_GET_LOOK_RIGHT = 104;
     private static final int ID_GET_LOOK = 105;
-    private static final int ID_GET_LOOK$1 = 106;
-    private static final int ID_GET_POSITION = 107;
-    private static final int ID_ROTATE = 108;
+    private static final int ID_GET_POSITION = 106;
+    private static final int ID_ROTATE = 107;
+    private static final int ID_MAX_SPEED = 108;
+    private static final int ID_INVENTORY = 110;
+    private static final int ID_X_POS = 112;
+    private static final int ID_Y_POS = 114;
+    private static final int ID_Z_POS = 116;
+    private static final int ID_ROTATION_YAW = 118;
+    private static final int ID_ROTATION_PITCH = 120;
+    private static final int ID_COMMANDS_ALLOWED = 122;
+    public static final JsObject PLAYER_PROTOTYPE = new JsObject(OBJECT_PROTOTYPE).addNative("setPlayerOnWorldCenter", ID_SET_PLAYER_ON_WORLD_CENTER, 1)
+            .addNative("getBoundingBox", ID_GET_BOUNDING_BOX, 0).addNative("getPlayerTransform", ID_GET_PLAYER_TRANSFORM, 0)
+            .addNative("getLookForw", ID_GET_LOOK_FORW, 0).addNative("getLookRight", ID_GET_LOOK_RIGHT, 0).addNative("getLook", ID_GET_LOOK, 2)
+            .addNative("getPosition", ID_GET_POSITION, 0).addNative("rotate", ID_ROTATE, 2).addNative("maxSpeed", ID_MAX_SPEED, -1)
+            .addNative("inventory", ID_INVENTORY, -1).addNative("xPos", ID_X_POS, -1).addNative("yPos", ID_Y_POS, -1).addNative("zPos", ID_Z_POS, -1)
+            .addNative("rotationYaw", ID_ROTATION_YAW, -1).addNative("rotationPitch", ID_ROTATION_PITCH, -1)
+            .addNative("commandsAllowed", ID_COMMANDS_ALLOWED, -1);
+
     // ModLoader end
 
     public EntityPlayer(Comcraft cc) {
-        super(JsObject.OBJECT_PROTOTYPE); // ModLoader
+        super(PLAYER_PROTOTYPE); // ModLoader
         this.cc = cc;
         inventory = new InventoryPlayer();
         vVec = new Vec3D();
@@ -72,26 +87,7 @@ public class EntityPlayer extends JsObject { // ModLoader
         w = aspect * h;
         boundingBox = new AxisAlignedBB(0, 0, 0, 0, 0, 0);
         blockVec = new Vec3D(xPos, yPos, zPos);
-        // ModLoader start
-        // Methods
-        addNative("setPlayerOnWorldCenter", ID_SET_PLAYER_ON_WORLD_CENTER, 1);
-        addNative("getBoundingBox", ID_GET_BOUNDING_BOX, 0);
-        addNative("getPlayerTransform", ID_GET_PLAYER_TRANSFORM, 0);
-        addNative("getLookForw", ID_GET_LOOK_FORW, 0);
-        addNative("getLookRight", ID_GET_LOOK_RIGHT, 0);
-        addNative("getLook", ID_GET_LOOK, 0);
-        addNative("getLook1", ID_GET_LOOK$1, 2);
-        addNative("getPosition", ID_GET_POSITION, 0);
-        addNative("rotate", ID_ROTATE, 2);
-        // Properties
-        addVar("inventory", inventory);
-        addVar("xPos", new Float(xPos));
-        addVar("yPos", new Float(yPos));
-        addVar("zPos", new Float(zPos));
-        addVar("rotationYaw", new Float(rotationYaw));
-        addVar("rotationPitch", new Float(rotationPitch));
-        addVar("commandsAllowed", new Boolean(commandsAllowed));
-        // ModLoader end
+        ModAPI.event.runEvent("Player.Construct", new Object[] { this });
     }
 
     public EntityPlayer(Comcraft cc, ServerGame server) {
@@ -115,6 +111,12 @@ public class EntityPlayer extends JsObject { // ModLoader
         if (dt > 0.15f) {
             dt = 0.15f;
         }
+
+        Vec3D movVec = new Vec3D(strafe, up, forw);
+        ModAPI.event.runEvent("Game.Player.moveEntity", new Object[] { this, movVec });
+        strafe = (int) movVec.x;
+        up = (int) movVec.y;
+        forw = (int) movVec.z;
 
         if (vVec.lengthVector() < maxSpeed) {
             Vec3D forward = getLookForw();
@@ -194,6 +196,8 @@ public class EntityPlayer extends JsObject { // ModLoader
         slowVec = slowVec.crossProduct(9f * dt);
 
         Vec3D prevVec = new Vec3D(vVec);
+
+        ModAPI.event.runEvent("Game.Player.updateEntityMove", new Object[] { this, slowVec, vVec });
 
         vVec = slowVec.subtractVector(vVec);
 
@@ -332,39 +336,78 @@ public class EntityPlayer extends JsObject { // ModLoader
 
         dataOutputStream.writeBoolean(commandsAllowed);
     }
+
     // ModLoader start
     public void evalNative(int id, JsArray stack, int sp, int parCount) {
-        switch(id) {
+        switch (id) {
         case ID_SET_PLAYER_ON_WORLD_CENTER:
-            setPlayerOnWorldCenter(stack.getInt(sp+2));
+            setPlayerOnWorldCenter(stack.getInt(sp + 2));
             break;
         case ID_GET_BOUNDING_BOX:
-            stack.setObject(sp,getBoundingBox());
+            stack.setObject(sp, getBoundingBox());
             break;
         case ID_GET_PLAYER_TRANSFORM:
-            stack.setObject(sp,getPlayerTransform());
+            stack.setObject(sp, getPlayerTransform());
             break;
         case ID_GET_LOOK_FORW:
-            stack.setObject(sp,getLookForw());
+            stack.setObject(sp, getLookForw());
             break;
         case ID_GET_LOOK_RIGHT:
-            stack.setObject(sp,getLookRight());
+            stack.setObject(sp, getLookRight());
             break;
         case ID_GET_LOOK:
-            stack.setObject(sp,getLook());
-            break;
-        case ID_GET_LOOK$1:
-            stack.setObject(sp,getLook(stack.getInt(sp+2), stack.getInt(sp+3)));
+            if (parCount < 2) {
+                stack.setObject(sp, getLook());
+            } else {
+                stack.setObject(sp, getLook(stack.getInt(sp + 2), stack.getInt(sp + 3)));
+            }
             break;
         case ID_GET_POSITION:
-            stack.setObject(sp,getPosition());
+            stack.setObject(sp, getPosition());
             break;
         case ID_ROTATE:
-            rotate((float) stack.getNumber(sp+2), (float) stack.getNumber(sp+3));
+            rotate((float) stack.getNumber(sp + 2), (float) stack.getNumber(sp + 3));
             break;
-
-            default:
-                super.evalNative(id, stack, sp, parCount);
+        case ID_MAX_SPEED:
+            stack.setNumber(sp, maxSpeed);
+            break;
+        case ID_MAX_SPEED + 1:
+            maxSpeed = (float) stack.getNumber(sp);
+            break;
+        case ID_INVENTORY:
+            stack.setObject(sp, inventory);
+            break;
+        case ID_X_POS:
+            stack.setNumber(sp, xPos);
+            break;
+        case ID_Y_POS:
+            stack.setNumber(sp, yPos);
+            break;
+        case ID_Z_POS:
+            stack.setNumber(sp, zPos);
+            break;
+        case ID_ROTATION_YAW:
+            stack.setNumber(sp, rotationYaw);
+            break;
+        case ID_ROTATION_PITCH:
+            stack.setNumber(sp, rotationPitch);
+            break;
+        case ID_COMMANDS_ALLOWED:
+            stack.setBoolean(sp, commandsAllowed);
+            break;
+        case ID_X_POS + 1:
+            break;
+        case ID_Y_POS + 1:
+            break;
+        case ID_Z_POS + 1:
+            break;
+        case ID_ROTATION_YAW + 1:
+        case ID_ROTATION_PITCH + 1:
+        case ID_COMMANDS_ALLOWED + 1:
+            // setters not allowed
+            break;
+        default:
+            super.evalNative(id, stack, sp, parCount);
         }
     }
     // ModLoader end

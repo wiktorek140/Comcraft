@@ -1,19 +1,13 @@
 package net.comcraft.src;
 
-// ModLoader start
 import com.google.minijoe.sys.JsArray;
 import com.google.minijoe.sys.JsObject;
 
-// ModLoader end
 public final class Vec3D extends JsObject { // ModLoader
 
     public float x;
     public float y;
     public float z;
-
-    public Vec3D() {
-        super(JsObject.OBJECT_PROTOTYPE); // ModLoader
-    }
 
     // ModLoader start
     private static final int ID_SET_COMPONENTS = 100;
@@ -28,36 +22,30 @@ public final class Vec3D extends JsObject { // ModLoader
     private static final int ID_COPY = 109;
     private static final int ID_INNER_PRODUCT = 110;
     public static final int ID_CONSTRUCT = 111;
+    private static final int ID_X = 112;
+    private static final int ID_Y = 114;
+    private static final int ID_Z = 116;
 
     // ModLoader end
+    public static final JsObject VEC3D_PROTOTYPE = new JsObject(OBJECT_PROTOTYPE).addNative("setComponents", ID_SET_COMPONENTS, 3)
+            .addNative("subtractVector", ID_SUBTRACT_VECTOR, 1).addNative("normalize", ID_NORMALIZE, 0).addNative("dotProduct", ID_DOT_PRODUCT, 1)
+            .addNative("crossProduct", ID_CROSS_PRODUCT, 1).addNative("addVector", ID_ADD_VECTOR, 3).addNative("distanceTo", ID_DISTANCE_TO, 1)
+            .addNative("squareDistanceTo", ID_SQUARE_DISTANCE_TO, 1).addNative("lengthVector", ID_LENGTH_VECTOR, 0).addNative("copy", ID_COPY, 1)
+            .addNative("innerProduct", ID_INNER_PRODUCT, 1).addNative("x", ID_X, -1).addNative("y", ID_Y, -1).addNative("z", ID_Z, -1);
+
+    public Vec3D() {
+        super(VEC3D_PROTOTYPE);
+    }
 
     public Vec3D(float x, float y, float z) {
-        super(JsObject.OBJECT_PROTOTYPE); // ModLoader
+        this(); // ModLoader
         this.x = x;
         this.y = y;
         this.z = z;
-        // ModLoader start
-        // Methods
-        addNative("setComponents", ID_SET_COMPONENTS, 3);
-        addNative("subtractVector", ID_SUBTRACT_VECTOR, 1);
-        addNative("normalize", ID_NORMALIZE, 0);
-        addNative("dotProduct", ID_DOT_PRODUCT, 1);
-        addNative("crossProduct", ID_CROSS_PRODUCT, 1);
-        addNative("addVector", ID_ADD_VECTOR, 3);
-        addNative("distanceTo", ID_DISTANCE_TO, 1);
-        addNative("squareDistanceTo", ID_SQUARE_DISTANCE_TO, 1);
-        addNative("lengthVector", ID_LENGTH_VECTOR, 0);
-        addNative("copy", ID_COPY, 1);
-        addNative("innerProduct", ID_INNER_PRODUCT, 1);
-        // Properties
-        addVar("x", new Float(x));
-        addVar("y", new Float(y));
-        addVar("z", new Float(z));
-        // ModLoader end
     }
 
     public Vec3D(Vec3D vec) {
-        super(JsObject.OBJECT_PROTOTYPE); // ModLoader
+        this(); // ModLoader
         this.x = vec.x;
         this.y = vec.y;
         this.z = vec.z;
@@ -142,10 +130,32 @@ public final class Vec3D extends JsObject { // ModLoader
         return res;
     }
 
+    public String toString() {
+        return "Vec3D(x=" + x + ", y=" + y + ", z=" + z + ")";
+    }
+
     // ModLoader start
     public void evalNative(int id, JsArray stack, int sp, int parCount) {
         Object object;
         switch (id) {
+        case ID_X:
+            stack.setNumber(sp, x);
+            break;
+        case ID_X + 1:
+            x = (float) stack.getNumber(sp);
+            break;
+        case ID_Y:
+            stack.setNumber(sp, y);
+            break;
+        case ID_Y + 1:
+            y = (float) stack.getNumber(sp);
+            break;
+        case ID_Z:
+            stack.setNumber(sp, z);
+            break;
+        case ID_Z + 1:
+            z = (float) stack.getNumber(sp);
+            break;
         case ID_SET_COMPONENTS:
             stack.setObject(sp, setComponents((float) stack.getNumber(sp + 2), (float) stack.getNumber(sp + 3), (float) stack.getNumber(sp + 4)));
             break;
@@ -192,9 +202,9 @@ public final class Vec3D extends JsObject { // ModLoader
             stack.setNumber(sp, (double) innerProduct((Vec3D) stack.getObject(sp + 2)));
             break;
         case ID_CONSTRUCT:
-            x = new Float(stack.getNumber(sp + 2)).floatValue();
-            y = new Float(stack.getNumber(sp + 3)).floatValue();
-            z = new Float(stack.getNumber(sp + 4)).floatValue();
+            x = (float) stack.getNumber(sp + 2);
+            y = (float) stack.getNumber(sp + 3);
+            z = (float) stack.getNumber(sp + 4);
             break;
         default:
             super.evalNative(id, stack, sp, parCount);

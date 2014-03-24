@@ -439,7 +439,6 @@ public final class Comcraft extends JsObject implements Runnable {
 
         guiIngame.addCommandButton();
         displayGuiScreen(new GuiLoadingWorld());
-        //ModGlobals.event.runEvent("World.Start");
     }
 
     public void endWorld() {

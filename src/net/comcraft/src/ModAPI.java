@@ -42,7 +42,7 @@ public class ModAPI extends JsObject implements JsObjectFactory {
         return instance;
     }
 
-    public ModAPI(Comcraft cc) {
+    private ModAPI(Comcraft cc) {
         super(OBJECT_PROTOTYPE);
         this.cc = cc;
         scopeChain = JsSystem.createGlobal();
@@ -67,7 +67,7 @@ public class ModAPI extends JsObject implements JsObjectFactory {
     /** Constructible objects */
     private void addInstantiableObjects() {
         addVar("AxisAlignedBB", new JsFunction(this, FACTORY_ID_AABB, AxisAlignedBB.AABB_PROTOTYPE, AxisAlignedBB.ID_CONSTRUCT, 6));
-        addVar("Vec3D", new JsFunction(this, FACTORY_ID_VEC3D, OBJECT_PROTOTYPE, Vec3D.ID_CONSTRUCT, 3));
+        addVar("Vec3D", new JsFunction(this, FACTORY_ID_VEC3D, Vec3D.VEC3D_PROTOTYPE, Vec3D.ID_CONSTRUCT, 3));
         addVar("InvItemStack", new JsFunction(this, FACTORY_ID_INVITEMSTACK, OBJECT_PROTOTYPE, InvItemStack.ID_CONSTRUCT, 2));
         addVar("Block", new JsFunction(this, FACTORY_ID_BLOCK, Block.BLOCK_PROTOTYPE, Block.ID_CONSTRUCT, 2));
         addVar("Transform", new JsFunction(this, FACTORY_ID_TRANSFORM, Transform.TRANSFORM_PROTOTYPE, Transform.ID_CONSTRUCT, 0));
@@ -81,6 +81,9 @@ public class ModAPI extends JsObject implements JsObjectFactory {
         event.addEvent("Game.Command");
         event.addEvent("Language.List");
         event.addEvent("Comcraft.displayScreen");
+        event.addEvent("Player.Construct");
+        event.addEvent("Game.Player.moveEntity");
+        event.addEvent("Game.Player.updateEntityMove");
     }
 
     /** Handle all API global function calls */
