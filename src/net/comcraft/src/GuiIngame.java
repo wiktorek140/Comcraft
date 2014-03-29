@@ -22,7 +22,7 @@ public class GuiIngame extends GuiScreen implements GuiTextBoxHost {
     private GuiButton screenshotButton;
 
     public GuiIngame(Comcraft cc) {
-        super(null);
+        super(null, "InGame");
 
         this.cc = cc;
         elementsList = new Vector(6);
@@ -312,6 +312,6 @@ public class GuiIngame extends GuiScreen implements GuiTextBoxHost {
             return;
         }
         // Work In Progress
-        ModGlobals.event.runEvent("Game.Command", new Object[] { cmd });
+        ModAPI.event.runEvent("Game.Command", new Object[] { cmd, cc.player });
     }
 }

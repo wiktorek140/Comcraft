@@ -1,7 +1,9 @@
 package net.comcraft.src;
 
 import java.util.Vector;
+
 import javax.microedition.m3g.*;
+
 import net.comcraft.client.Comcraft;
 
 public final class RenderBlocks {
@@ -9,6 +11,7 @@ public final class RenderBlocks {
     private final Comcraft cc;
     private Graphics3D g3D;
     private Appearance[] appearanceList;
+    private Appearance[] skinList;
     private Fog fog;
     private boolean renderAllFaces;
     private Vector cullingOffTextures;
@@ -38,14 +41,16 @@ public final class RenderBlocks {
 
     public void releaseRenderBlock() {
         appearanceList = null;
+        skinList = null;
     }
 
     public void reloadRenderBlock() {
         appearanceList = new Appearance[512];
+        skinList = new Appearance[6];
 
         Material material = new Material();
         material.setVertexColorTrackingEnable(false);
-//        material.setColor(Material.AMBIENT, 0x00FF0000);
+        // material.setColor(Material.AMBIENT, 0x00FF0000);
 
         CompositingMode compositingMode = new CompositingMode();
         compositingMode.setBlending(CompositingMode.ALPHA);
@@ -68,7 +73,7 @@ public final class RenderBlocks {
         setFogColor(0xB0E0E6);
         setFogDistance(130);
 
-        for (int i = 0; i < 512; ++i) {
+        for (int i = 0; i < appearanceList.length; ++i) {
             appearanceList[i] = new Appearance();
             appearanceList[i].setTexture(0, cc.textureProvider.getTerrainTexture(i));
             appearanceList[i].setMaterial(material);
@@ -83,6 +88,13 @@ public final class RenderBlocks {
             } else {
                 appearanceList[i].setPolygonMode(polygonModeNormal);
             }
+        }
+        for (int i = 0; i < skinList.length; ++i) {
+            skinList[i] = new Appearance();
+            skinList[i].setTexture(0, cc.textureProvider.getSkinTexture(i));
+            skinList[i].setMaterial(material);
+            skinList[i].setCompositingMode(compositingMode);
+            skinList[i].setPolygonMode(polygonModeNormal);
         }
     }
 
@@ -103,7 +115,7 @@ public final class RenderBlocks {
     public void renderBlockByRenderType(Block block, int x, int y, int z, Transform transform, EntityPlayer player, ChunkPiece chunkPiece) {
         int i = block.getRenderType();
 
-        if (i == 0 || ((i == 1 || i == 4) && chunkPiece == null)) {
+        if (i == 0 || ((i == 1 || i == 4 || i == 10) && chunkPiece == null)) {
             renderStandardBlock(block, x, y, z, transform, player);
         } else if (i == 1) {
             renderPiecedBlock(block, x, y, z, transform, player, chunkPiece);
@@ -123,6 +135,8 @@ public final class RenderBlocks {
             renderFenceBlock(block, x, y, z, transform, player);
         } else if (i == 9) {
             renderBedBlock(block, x, y, z, transform, player);
+        } else if (i == 10) {
+            renderPlayerBlock(block, x, y, z, transform, player, chunkPiece);
         }
     }
 
@@ -321,6 +335,33 @@ public final class RenderBlocks {
         }
         if (renderAllFaces || (player.yPos < (y + 0f) && block.shouldSideBeRendered(cc.world, x, y - 1, z, 5))) {
             renderPiecedFace(block, x, y, z, 5, chunkPiece, transform);
+        }
+    }
+
+    private void renderPlayerBlock(Block block, int x, int y, int z, Transform transform, EntityPlayer player, ChunkPiece chunkPiece) {
+        if (renderAllFaces || (player.zPos > (z + 1f) && block.shouldSideBeRendered(cc.world, x, y, z + 1, 0))) {
+            renderPlayerFace(block, x, y, z, 0, chunkPiece, transform);
+        }
+        if (renderAllFaces || (player.zPos < (z + 0f) && block.shouldSideBeRendered(cc.world, x, y, z - 1, 1))) {
+            renderPlayerFace(block, x, y, z, 1, chunkPiece, transform);
+        }
+        if (renderAllFaces || (player.xPos < (x + 0f) && block.shouldSideBeRendered(cc.world, x - 1, y, z, 2))) {
+            renderPlayerFace(block, x, y, z, 2, chunkPiece, transform);
+        }
+        if (renderAllFaces || (player.xPos > (x + 1f) && block.shouldSideBeRendered(cc.world, x + 1, y, z, 3))) {
+            renderPlayerFace(block, x, y, z, 3, chunkPiece, transform);
+        }
+        if (renderAllFaces || (player.yPos > (y + 2f) && block.shouldSideBeRendered(cc.world, x, y + 1, z, 4))) {
+            renderPlayerFace(block, x, y, z, 4, chunkPiece, transform);
+        }
+        if (renderAllFaces || (player.yPos < (y + 0f) && block.shouldSideBeRendered(cc.world, x, y - 1, z, 5))) {
+            renderPlayerFace(block, x, y, z, 5, chunkPiece, transform);
+        }
+    }
+
+    private void renderPlayerFace(Block block, int x, int y, int z, int side, ChunkPiece chunkPiece, Transform transform) {
+        if (chunkPiece.needsRender(cc.render.currentTick, side)) {
+            g3D.render(chunkPiece.getVertexBuffer(cc.world, side), block.getBlockIndexBuffer(), skinList[block.getBlockTexture(cc.world, x, y, z, side)], transform);
         }
     }
 

@@ -13,7 +13,7 @@ public class GuiEditServer extends GuiScreen implements GuiTextBoxHost {
     private String[] selected;
 
     public GuiEditServer(GuiSelectServer parentScreen, String name, String ip, String[] selected) {
-        super(parentScreen);
+        super(parentScreen, "EditServer");
         this.name = name;
         this.ip = ip;
         this.isNew = selected == null;

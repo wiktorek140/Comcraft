@@ -9,7 +9,7 @@ public class GuiSelectServer extends GuiScreenSlotHost implements GuiYesNoHost, 
     private String[] selectedServer;
 
     public GuiSelectServer(GuiScreen parentScreen) {
-        super(parentScreen);
+        super(parentScreen, "SelectServer");
         guiSlot = new GuiSlotSelectServer(this);
     }
 

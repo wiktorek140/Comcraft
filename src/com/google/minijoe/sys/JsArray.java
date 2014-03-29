@@ -239,7 +239,7 @@ public class JsArray extends JsObject {
     System.arraycopy(objects, from, target.objects, to, l);
     
     for(int i = to + l; i < maxIdx; i++){
-      target.setObject(i, null);
+      target.objects[i] = null;
     }
   }
 

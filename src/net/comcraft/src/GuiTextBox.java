@@ -24,7 +24,7 @@ public class GuiTextBox extends GuiScreen implements CommandListener {
     private int maxLength;
     
     public GuiTextBox(GuiTextBoxHost parentScreen, String string, int textFieldType, int maxLength) {
-        super((GuiScreen) parentScreen);
+        super((GuiScreen) parentScreen, "TextBox");
 
         this.guiTextBoxHost = parentScreen;
         this.textBoxString = string;

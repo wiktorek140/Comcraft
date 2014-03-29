@@ -19,7 +19,7 @@ public class GuiSelectLanguage extends GuiScreenSlotHost {
     private LanguageSet selectetLanguage;
 
     public GuiSelectLanguage(GuiScreen parentScreen) {
-        super(parentScreen);
+        super(parentScreen, "SelectLanguage");
         guiSlot = new GuiSlotSelectLanguage(this);
 
         initLanguagesList();
@@ -34,8 +34,8 @@ public class GuiSelectLanguage extends GuiScreenSlotHost {
         languagesList.addElement(new LanguageSet("Português (Brasil)", "/lang/pt-BR.lng"));
         languagesList.addElement(new LanguageSet("Pусский", "/lang/ru.lng"));
         languagesList.addElement(new LanguageSet("Український", "/lang/uk.lng"));
-        ModGlobals.event.runEvent("Language.List");
-        Object[] s = ModGlobals.event.getSucesses("Language.List");
+        ModAPI.event.runEvent("Language.List");
+        Object[] s = ModAPI.event.getSucesses("Language.List");
         for (int i = 0; i < s.length; i++) {
             JsArray a = (JsArray) s[i];
             languagesList.addElement(new LanguageSet(a.getString(0), a.getString(1)));

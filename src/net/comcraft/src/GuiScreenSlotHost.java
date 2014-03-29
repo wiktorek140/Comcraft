@@ -7,19 +7,19 @@ import net.comcraft.client.Comcraft;
 public abstract class GuiScreenSlotHost extends GuiScreen {
 
     protected GuiSlot guiSlot;
-    private int button_index =0 ;
+    private int button_index = 0;
 
-    public GuiScreenSlotHost(GuiScreen parentScreen) {
-        super(parentScreen);
+    public GuiScreenSlotHost(GuiScreen parentScreen, String guiName) {
+        super(parentScreen, guiName);
     }
 
     protected abstract void initGuiSlotCustom();
-    
+
     protected final void initGui() {
         guiSlot.initSlotScreen(cc);
-        
+
         initGuiSlotCustom();
-        
+
         guiSlot.resetSlot();
     }
 
@@ -58,6 +58,7 @@ public abstract class GuiScreenSlotHost extends GuiScreen {
     protected void customHandleInput() {
         guiSlot.handleInput();
     }
+
     protected void addButton(String text, boolean enabled, int row, int col) {
         row++;
         int bwidth = GuiButtonSmall.getButtonWidth();
@@ -71,5 +72,5 @@ public abstract class GuiScreenSlotHost extends GuiScreen {
         }
         elementsList.addElement(new GuiButtonSmall(cc, button_index, xpos, ypos, text).setEnabled(enabled));
         button_index++;
-     }
+    }
 }

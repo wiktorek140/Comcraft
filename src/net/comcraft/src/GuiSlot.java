@@ -2,6 +2,7 @@ package net.comcraft.src;
 
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
+
 import net.comcraft.client.Comcraft;
 
 public abstract class GuiSlot extends GuiElement {

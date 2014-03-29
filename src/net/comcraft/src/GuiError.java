@@ -10,14 +10,14 @@ public class GuiError extends GuiScreen {
     private String errorMessage;
     
     public GuiError(ComcraftException ex) {
-        super(null);
+        super(null, "Error");
 
         errorClassName = "ComcraftException" + " (class name: " + ex.getOriginalClassName() + " )";
         errorMessage = ex.getMessage() + " (message: " + ex.getOriginalMessage() + " )";
     }
 
     public GuiError(Throwable ex) {
-        super(null);
+        super(null, "Error");
 
         errorClassName = ex.getClass().getName();
         errorMessage = ex.getMessage();

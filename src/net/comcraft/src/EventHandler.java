@@ -6,22 +6,39 @@ import java.util.Vector;
 import com.google.minijoe.sys.JsArray;
 import com.google.minijoe.sys.JsException;
 import com.google.minijoe.sys.JsFunction;
+import com.google.minijoe.sys.JsObject;
 
 public class EventHandler {
 
     private Hashtable events;
 
     public EventHandler(String[] eventnames) {
-        events = new Hashtable();
+        this();
         for (int i = 0; i < eventnames.length; i++) {
-            Vector[] v = new Vector[2];
-            v[0] = new Vector();
-            v[1] = new Vector();
-            events.put(eventnames[i], v);
+            addEventName(eventnames[i]);
         }
     }
 
+    public EventHandler() {
+        events = new Hashtable();
+    }
+
+    protected void addEventName(String name) {
+        Vector[] v = new Vector[2];
+        v[0] = new Vector();
+        v[1] = new Vector();
+        events.put(name, v);
+    }
+
+    public boolean hasEvent(String name) {
+        return events.containsKey(name);
+    }
+
     public void runEvent(String name, Object[] params) {
+        runEvent(name, null, params);
+    }
+
+    public void runEvent(String name, JsObject thisPtr, Object[] params) {
         if (params == null) {
             params = new Object[0];
         }
@@ -31,22 +48,26 @@ public class EventHandler {
         }
         Vector e = event[0];
         JsArray stack = new JsArray();
-        stack.setObject(0, ModGlobals.global); // Global scope
         for (int ce = 0; ce < e.size(); ce++) {
             JsFunction fn = (JsFunction) e.elementAt(ce);
+            stack.setObject(0, thisPtr != null ? thisPtr : fn); // context ('this' variable)
             stack.setObject(1, fn); // Function
-            stack.setObject(2, fn); // Local scope
             for (int i = 0; i < params.length; i++) {
                 if (params[i] instanceof Integer) {
-                    stack.setInt(i + 3, ((Integer) params[i]).intValue());
+                    stack.setInt(i + 2, ((Integer) params[i]).intValue());
                 } else if (params[i] instanceof Boolean) {
-                    stack.setBoolean(i + 3, ((Boolean) params[i]).booleanValue());
+                    stack.setBoolean(i + 2, ((Boolean) params[i]).booleanValue());
                 } else {
-                    stack.setObject(i + 3, params[i]);
+                    stack.setObject(i + 2, params[i]);
                 }
             }
-            fn.eval(stack, 1, params.length);
-            event[1].setElementAt(stack.getObject(1), event[0].indexOf(fn));
+            try {
+                fn.eval(stack, 0, params.length);
+                event[1].setElementAt(stack.getObject(0), ce);
+            } catch (Exception e1) {
+                System.err.println(e1.getMessage());
+                e1.printStackTrace();
+            }
         }
     }
 
@@ -55,10 +76,40 @@ public class EventHandler {
     }
 
     public void bindEvent(String name, JsFunction function) {
+        if (name == null || function == null) {
+            return;
+        }
         if (!events.containsKey(name)) {
             throw new JsException("Unknown Event key " + name);
         }
         Vector[] e = (Vector[]) events.get(name);
+        e[0].addElement(function);
+        e[1].addElement(null);
+    }
+
+    public boolean bindEventOnce(String name, JsFunction function) {
+        if (!hasEvent(name))
+            return false;
+        Vector fnlist = ((Vector[]) events.get(name))[0];
+        for (int i = 0; i < fnlist.size(); i++) {
+            if (((JsFunction) fnlist.elementAt(i)).equals(function)) {
+                return false;
+            }
+        }
+        bindEvent(name, function);
+        return true;
+    }
+
+    public void setEvent(String name, JsFunction function) {
+        if (name == null || function == null) {
+            return;
+        }
+        if (!events.containsKey(name)) {
+            throw new JsException("Unknown Event key " + name);
+        }
+        Vector[] e = (Vector[]) events.get(name);
+        e[0].removeAllElements();
+        e[1].removeAllElements();
         e[0].addElement(function);
         e[1].addElement(null);
     }

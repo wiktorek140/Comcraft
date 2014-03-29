@@ -38,6 +38,7 @@ public class ModelsList extends JsObject {
         ModelStairs.initModel();
         ModelSmallCube.initModel();
         ModelFence.initModel();
+        ModelPlayer.initModel();
     }
 
     public static Node getModel(String path) {

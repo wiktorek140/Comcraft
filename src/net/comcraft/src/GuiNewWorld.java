@@ -25,7 +25,7 @@ public class GuiNewWorld extends GuiScreen {
     private boolean allowcommands;
 
     public GuiNewWorld(GuiScreen parentScreen, GuiScreen guiMainMenu) {
-        super(parentScreen);
+        super(parentScreen, "NewWorld");
 
         this.guiMainMenu = guiMainMenu;
     }
@@ -57,6 +57,8 @@ public class GuiNewWorld extends GuiScreen {
         if (!guiButton.enabled) {
             return;
         }
+
+        eh.runEvent("handleGuiAction", this, new Object[] { guiButton });
 
         if (guiButton.getId() == 0) {
             generateWorld();

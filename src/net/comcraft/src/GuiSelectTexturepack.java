@@ -8,7 +8,7 @@ public final class GuiSelectTexturepack extends GuiScreenSlotHost {
     private TexturePack selectedTexturePack;
 
     public GuiSelectTexturepack(GuiScreen parentScreen) {
-        super(parentScreen);
+        super(parentScreen, "SelectTexturepack");
         guiSlot = new GuiSlotSelectTexturepack(this);
     }
 

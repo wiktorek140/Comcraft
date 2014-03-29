@@ -13,7 +13,7 @@ public class GuiSelectWorld extends GuiScreenSlotHost implements GuiYesNoHost, G
     public int maxWorlds;
 
     public GuiSelectWorld(GuiScreen parentScreen) {
-        super(parentScreen);
+        super(parentScreen, "SelectWorld");
         guiSlot = new GuiSlotSelectWorld(this);
     }
 

@@ -16,16 +16,17 @@ import com.java4ever.apime.io.GZIP;
 import net.comcraft.client.Comcraft;
 
 public class ModLoader {
-    public static final int API_VERSION = 5;
-    public static final int MIN_API_VERSION = 2;
+    public static final int API_VERSION = 6;
+    public static final int MIN_API_VERSION = 6;
     private static final int PACKAGE = 0x10;
     private static final int MOD_DESCRIPTOR = 0x20;
     private static final int RESOURCE = 0x30;
-    public static final String version = "0.5";
+    public static final String version = "0.6";
     private Comcraft cc;
     private Vector Mods;
     private boolean hasInitialized = false;
     private Hashtable resourcedata;
+    private Hashtable packages;
 
     public ModLoader(Comcraft cc) {
         this.cc = cc;
@@ -53,15 +54,16 @@ public class ModLoader {
             ioEx.printStackTrace();
             return;
         }
-        ModGlobals.global = new BaseMod();
+        packages = new Hashtable(elements.size() / 2);
+        ModAPI.getInstance(cc); // Prepare the API
         for (int i = 0; i < elements.size(); ++i) {
             String elementName = (String) elements.elementAt(i);
-            if (elementName.endsWith("/")) {
+            if (elementName.endsWith("/") || !elementName.endsWith(".mod")) {
                 continue;
             }
             String modFileName = elementName.substring(elementName.lastIndexOf(0x2F) + 1, elementName.length());
+            Mod mod = new Mod(this, modFileName);
             byte[] RawData = null;
-            Object[] info = new Object[4];
             try {
                 FileConnection GZModFile = open(elementName);
                 byte[] GZData = new byte[(int) GZModFile.fileSize()];
@@ -73,21 +75,25 @@ public class ModLoader {
                 RawData = GZIP.inflate(GZData);
             } catch (IOException modEx) {
                 modEx.printStackTrace();
-                info = new Object[] { modFileName, "", modEx.getMessage(), new Boolean(false) };
+                mod.info = modEx.getMessage();
+                mod.fatalError = true;
             }
             if (RawData != null) {
                 try {
-                    info = ReadModFile(new DataInputStream(new ByteArrayInputStream(RawData)));
+                    ReadModFile(new DataInputStream(new ByteArrayInputStream(RawData)), mod);
                 } catch (IOException e) {
-                    info = new Object[] { modFileName, "", e.getMessage(), new Boolean(false) };
+                    mod.info = e.getMessage();
+                    mod.fatalError = true;
                 }
             }
-            Mods.addElement(new Mod(this, (String) info[0], (String) info[1], (String) info[2], ((Boolean) info[3]).booleanValue()));
+            Mods.addElement(mod);
         }
-
+        for (int i = 0; i < Mods.size(); i++) {
+            ((Mod) Mods.elementAt(i)).initMod();
+        }
     }
 
-    private Object[] ReadModFile(DataInputStream dis) throws IOException {
+    private void ReadModFile(DataInputStream dis, Mod mod) throws IOException {
         byte[] b = new byte[4];
         dis.read(b);
         if (!new String(b).equals("CCML")) {
@@ -100,32 +106,28 @@ public class ModLoader {
         if (version < MIN_API_VERSION) {
             throw new IOException("Mod built for an earlier version of comcraft");
         }
-        String main = null;
-        Object[] info = new Object[4];
-        info[2] = "No Mod Info";
-        info[3] = new Boolean(false);
+        mod.info = "No Mod Info";
         int flags = dis.read();
-        while (dis.available() > 0) {
+        readLoop: while (dis.available() > 0) {
             int opt = dis.read();
             switch (opt) {
             case MOD_DESCRIPTOR:
-                info[0] = dis.readUTF();
-                info[1] = dis.readUTF();
-                main = dis.readUTF();
-                if (version >= 4) {
-                    String ldesc = dis.readUTF();
-                    if (ldesc.length() > 0) {
-                        info[2] = ldesc;
-                    }
+                mod.name = dis.readUTF();
+                mod.description = dis.readUTF();
+                mod.mainClass = dis.readUTF();
+                String ldesc = dis.readUTF();
+                if (ldesc.length() > 0) {
+                    mod.info = ldesc;
+                }
+                if (isDisabled(mod.mainClass)) {
+                    // Don't waste time if the mod is disabled
+                    break readLoop;
                 }
                 break;
             case RESOURCE:
                 int l = dis.read();
                 for (int i = 0; i < l; i++) {
                     String resname = dis.readUTF();
-                    if (version < 4) {
-                        resname = resname.substring("/res".length()).replace('\\', '/');
-                    }
                     String content = dis.readUTF();
                     if (resourcedata.containsKey(resname)) {
                         // Do something here maybe
@@ -139,25 +141,18 @@ public class ModLoader {
                 for (int i = 0; i < l; i++) {
                     String packageName = dis.readUTF();
                     int flen = dis.read();
+                    Hashtable files = new Hashtable(flen / 2);
                     for (int x = 0; x < flen; x++) {
                         String filename = dis.readUTF();
                         if (version >= 4 && (flags & 1) == 1) {
                             dis.readUTF(); // Skip past source code
                         }
                         int length = dis.readInt();
-                        if ((packageName + "." + filename).equals(main) && !isDisabled((String) info[0])) {
-                            try {
-                                JsFunction.exec(dis, ModGlobals.global);
-                                info[3] = new Boolean(true);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                info[2] = e.getMessage() + "\n\nIn file " + packageName + "." + filename;
-                            }
-                        } else {
-                            dis.read(new byte[length]);
-                            // Currently only the main class is executed
-                        }
+                        byte[] data = new byte[length];
+                        dis.read(data);
+                        files.put(filename, data);
                     }
+                    packages.put(packageName, files);
                 }
                 break;
             case -1:
@@ -168,7 +163,15 @@ public class ModLoader {
             }
         }
         dis.close();
-        return info;
+    }
+
+    public boolean executeModInNs(String package_, String fname) throws Exception {
+        Hashtable pkg;
+        if (packages.containsKey(package_) && (pkg = (Hashtable) packages.get(package_)).containsKey(fname)) {
+            JsFunction.exec(new DataInputStream(new ByteArrayInputStream((byte[]) pkg.get(fname))), ModAPI.getInstance());
+            return true;
+        }
+        return false;
     }
 
     public InputStream getResourceAsStream(String filename) {
@@ -192,9 +195,13 @@ public class ModLoader {
         return (FileConnection) Connector.open(filename, Connector.READ);
     }
 
-    public boolean isDisabled(String name) {
+    public boolean isDisabled(String modId) {
+        if (modId == null) {
+            return false;
+        }
         for (int i = 0; i < cc.settings.disabledMods.length; i++) {
-            if (cc.settings.disabledMods[i].equals(name)) {
+            String m;
+            if ((m = cc.settings.disabledMods[i]) != null && m.equals(modId)) {
                 return true;
             }
         }
@@ -205,21 +212,23 @@ public class ModLoader {
         if (!isDisabled(name)) {
             return;
         }
-        for (int i = 0; i < cc.settings.disabledMods.length; i++) {
-            if (cc.settings.disabledMods[i].equals(name)) {
-                cc.settings.disabledMods[i] = null;
+        String[] newarr = new String[cc.settings.disabledMods.length - 1];
+        for (int i = 0, ni = 0; i < cc.settings.disabledMods.length; i++) {
+            String m;
+            if ((m = cc.settings.disabledMods[i]) != null && !m.equals(name)) {
+                newarr[ni++] = cc.settings.disabledMods[i];
             }
         }
-
+        cc.settings.disabledMods = newarr;
     }
 
-    public void disable(String name) {
-        if (isDisabled(name)) {
+    public void disable(String modId) {
+        if (isDisabled(modId)) {
             return;
         }
         String[] newarr = new String[cc.settings.disabledMods.length + 1];
         System.arraycopy(cc.settings.disabledMods, 0, newarr, 0, cc.settings.disabledMods.length);
-        newarr[newarr.length - 1] = name;
+        newarr[newarr.length - 1] = modId;
         cc.settings.disabledMods = newarr;
     }
 }

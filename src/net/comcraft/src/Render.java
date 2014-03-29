@@ -62,7 +62,7 @@ public final class Render {
 
         background = new Background();
         background.setColor(0xB0E0E6);
-        ModGlobals.event.runEvent("Render.Init", new Object[] { background });
+        ModAPI.event.runEvent("Render.Init", new Object[] { background });
 //        background.setColor(0x191970);
 
         camera = new Camera();

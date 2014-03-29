@@ -6,7 +6,7 @@ import net.comcraft.client.Comcraft;
 public class GuiLoadingScreen extends GuiScreen {
 
     public GuiLoadingScreen() {
-        super(null);
+        super(null, "LoadingScreen");
     }
     
     protected void customDrawScreen() {

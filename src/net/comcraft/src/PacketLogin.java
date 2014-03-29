@@ -8,10 +8,11 @@ import net.comcraft.client.Comcraft;
 
 public class PacketLogin extends Packet {
 
-    private int uniqueId;
+    public final int uniqueId;
     private String username;
 
     public PacketLogin() {
+        uniqueId = 0;
     }
 
     /*

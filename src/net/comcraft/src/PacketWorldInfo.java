@@ -9,6 +9,7 @@ import java.io.IOException;
 public class PacketWorldInfo extends Packet {
 
     private DataInputStream dis;
+    private Object[][] existingPlayers;
 
     public PacketWorldInfo() {
     }
@@ -38,10 +39,21 @@ public class PacketWorldInfo extends Packet {
         }
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         this.dis = new DataInputStream(bais);
+
+        int players = dis.read() & 0xFF;
+        existingPlayers = new Object[players][2];
+        for (int i = 0; i < players; i++) {
+            int pId = dis.readInt();
+            Vec3D v = new Vec3D(dis.readFloat(), dis.readFloat(), dis.readFloat());
+            existingPlayers[i] = new Object[] { new Integer(pId), v };
+        }
     }
 
     public void process(ServerGame handler) {
         handler.handleWorldInfo(dis);
+        for (int i = 0; i < existingPlayers.length; i++) {
+            handler.handleNewPlayer(((Integer) existingPlayers[i][0]).intValue(), (Vec3D) existingPlayers[i][1]);
+        }
     }
 
 }

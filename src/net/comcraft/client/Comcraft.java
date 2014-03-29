@@ -21,9 +21,11 @@ import java.io.InputStream;
 import javax.microedition.lcdui.Font;
 import javax.microedition.lcdui.Graphics;
 
+import com.google.minijoe.sys.JsObject;
+
 import net.comcraft.src.*;
 
-public final class Comcraft implements Runnable {
+public final class Comcraft extends JsObject implements Runnable {
 
     public final CanvasComcraft ccCanvas;
     public final ComcraftMIDlet comcraftMIDlet;
@@ -55,6 +57,7 @@ public final class Comcraft implements Runnable {
     public MusicPlayer musicPlayer;
 
     public Comcraft(ComcraftMIDlet comcraftMIDlet, CanvasComcraft ccCanvas) {
+        super(OBJECT_PROTOTYPE);
         this.comcraftMIDlet = comcraftMIDlet;
         this.ccCanvas = ccCanvas;
         ccCanvas.setComcraft(this);
@@ -65,7 +68,7 @@ public final class Comcraft implements Runnable {
         g = null;
         currentScreen = null;
         textureProvider = null;
-        modLoader=new ModLoader(this);
+        modLoader = new ModLoader(this);
         textureProvider = new TextureManager(this);
         texturePackList = new TexturePackList(this);
         world = null;
@@ -102,6 +105,8 @@ public final class Comcraft implements Runnable {
 
         System.out.println("Screen width: " + screenWidth);
         System.out.println("Screen height: " + screenHeight);
+        addVar("screenWidth", new Integer(screenWidth));
+        addVar("screenHeight", new Integer(screenHeight));
     }
 
     public void openUrl(String url) {
@@ -391,6 +396,14 @@ public final class Comcraft implements Runnable {
             currentScreen.onScreenClosed();
         }
 
+        if (newGuiScreen != null) {
+            ModAPI.event.runEvent("Comcraft.displayScreen", new Object[] { newGuiScreen });
+            Object retval = ModAPI.event.getLastSuccess("Comcraft.displayScreen");
+            if (retval instanceof GuiScreen) {
+                newGuiScreen = (GuiScreen) retval;
+            }
+        }
+
         currentScreen = newGuiScreen;
 
         if (currentScreen != null) {
@@ -426,7 +439,6 @@ public final class Comcraft implements Runnable {
 
         guiIngame.addCommandButton();
         displayGuiScreen(new GuiLoadingWorld());
-        //ModGlobals.event.runEvent("World.Start");
     }
 
     public void endWorld() {

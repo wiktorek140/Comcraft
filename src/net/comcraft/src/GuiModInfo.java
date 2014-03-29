@@ -7,7 +7,7 @@ public class GuiModInfo extends GuiScreen {
     private String text;
 
     public GuiModInfo(GuiScreen parentScreen, String text) {
-        super(parentScreen);
+        super(parentScreen, "ModInfo");
         this.text = text;
     }
 

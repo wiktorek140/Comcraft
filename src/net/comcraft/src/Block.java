@@ -28,16 +28,16 @@ import javax.microedition.m3g.Node;
 import javax.microedition.m3g.VertexBuffer;
 
 import com.google.minijoe.sys.JsArray;
+import com.google.minijoe.sys.JsException;
 import com.google.minijoe.sys.JsFunction;
 import com.google.minijoe.sys.JsObject;
 import com.simon816.minijoe.nativetypes.Transform;
 
 public class Block extends JsObject {
 
-
     public static final Block[] blocksList = new Block[256];
 
-    public final int blockID;
+    public int blockID;
     private String blockName;
     private String blockPlacingSound = "/sound/block_placed.wav";
     private String blockDestroyingSound = "/sound/block_placed.wav";
@@ -50,38 +50,88 @@ public class Block extends JsObject {
     private boolean isNormal = true;
     private int RenderType = 1;
     private int IdDropped;
-    private EventHandler eh = new EventHandler(new String[] { "getBlockTransform", "getBlockTexture", "shouldSideBeRendered", "getCollisionBoundingBoxFromPool", "canPlaceBlockAt", "canPlaceBlockOnSide", "blockActivated", "onBlockPlaced",
-            "onBlockPlacedBy", "onBlockDestroyedByPlayer", "onNeighborBlockChange", "onBlockRemoval", "onBlockAdded", "tickBlock", "getBlockModel" });
+    private EventHandler eh = new EventHandler(new String[] { "getBlockTransform", "getBlockTexture", "shouldSideBeRendered",
+            "getCollisionBoundingBoxFromPool", "canPlaceBlockAt", "canPlaceBlockOnSide", "blockActivated", "onBlockPlaced", "onBlockPlacedBy",
+            "onBlockDestroyedByPlayer", "onNeighborBlockChange", "onBlockRemoval", "onBlockAdded", "tickBlock", "getBlockModel" });
     private VertexBuffer[][][][] BlockVertexBufferPieced = ModelPieceBlock.vertexBuffer;
     private IndexBuffer BlockIndexBuffer = ModelPieceBlock.indexBuffer;
     private int[] UsedTexturesList;
     private VertexBuffer[] BlockVertexBufferSided = null;
 
-    // ModLoader start
-    private static final int ID_CREATE = 100;
+    public static final int ID_CONSTRUCT = 100;
     private static final int ID_GET_BLOCK_NAME = 101;
-    private static final int ID_IS_NORMAL = 102;
-    private static final int ID_GET_BLOCK_DESTROYING_SOUND = 103;
-    private static final int ID_GET_BLOCK_PLACING_SOUND = 104;
+    private static final int ID_COLLIDES_WITH_PLAYER = 102;
+    private static final int ID_DOES_BLOCK_DESTROY_GRASS = 104;
+    private static final int ID_IS_REPLACEABLE_BLOCK = 106;
+    private static final int ID_IS_UPDATABLE_BLOCK = 108;
+    private static final int ID_CAN_BE_PIECED = 110;
+    private static final int ID_CAN_BE_PIECED_VERTICALLY = 112;
+    private static final int ID_IS_NORMAL = 114;
+    private static final int ID_RENDER_TYPE = 116;
+    private static final int ID_ID_DROPPED = 118;
+    private static final int ID_BLOCK_PLACING_SOUND = 120;
+    private static final int ID_BLOCK_DESTROYING_SOUND = 122;
+    private static final int ID_BLOCK_VERTEX_BUFFER_PIECED = 124;
+    private static final int ID_BLOCK_VERTEX_BUFFER_SIDED = 126;
+    private static final int ID_BLOCK_INDEX_BUFFER = 128;
+    private static final int ID_GET_BLOCK_TRANSFORM = 130;
+    private static final int ID_GET_BLOCK_TEXTURE = 132;
+    private static final int ID_SHOULD_SIDE_BE_RENDERED = 134;
+    private static final int ID_GET_COLLISION_BOUNDING_BOX_FROM_POOL = 136;
+    private static final int ID_CAN_PLACE_BLOCK_AT = 138;
+    private static final int ID_CAN_PLACE_BLOCK_ON_SIDE = 140;
+    private static final int ID_BLOCK_ACTIVATED = 142;
+    private static final int ID_ON_BLOCK_PLACED = 144;
+    private static final int ID_ON_BLOCK_PLACED_BY = 146;
+    private static final int ID_ON_BLOCK_DESTROYED_BY_PLAYER = 148;
+    private static final int ID_ON_NEIGHBOR_BLOCK_CHANGE = 150;
+    private static final int ID_ON_BLOCK_REMOVAL = 152;
+    private static final int ID_ON_BLOCK_ADDED = 154;
+    private static final int ID_TICK_BLOCK = 156;
+    private static final int ID_GET_BLOCK_MODEL = 158;
+    private static final int ID_GET_BLOCK = 160;
 
-    // ModLoader end
+    public static final JsObject BLOCK_PROTOTYPE = new Block(OBJECT_PROTOTYPE).addNative("getBlockName", ID_GET_BLOCK_NAME, 0)
+            .addNative("collidesWithPlayer", ID_COLLIDES_WITH_PLAYER, -1).addNative("doesBlockDestroyGrass", ID_DOES_BLOCK_DESTROY_GRASS, -1)
+            .addNative("isReplaceableBlock", ID_IS_REPLACEABLE_BLOCK, -1).addNative("isUpdatableBlock", ID_IS_UPDATABLE_BLOCK, -1)
+            .addNative("canBePieced", ID_CAN_BE_PIECED, -1).addNative("canBePiecedVertically", ID_CAN_BE_PIECED_VERTICALLY, -1)
+            .addNative("isNormal", ID_IS_NORMAL, -1).addNative("RenderType", ID_RENDER_TYPE, -1).addNative("IdDropped", ID_ID_DROPPED, -1)
+            .addNative("blockPlacingSound", ID_BLOCK_PLACING_SOUND, -1).addNative("blockDestroyingSound", ID_BLOCK_DESTROYING_SOUND, -1)
+            .addNative("blockVertexBufferPieced", ID_BLOCK_VERTEX_BUFFER_PIECED, -1).addNative("blockVertexBufferSided", ID_BLOCK_VERTEX_BUFFER_SIDED, -1)
+            .addNative("blockIndexBuffer", ID_BLOCK_INDEX_BUFFER, -1).addNative("getBlockTransform", ID_GET_BLOCK_TRANSFORM, -1)
+            .addNative("getBlockTexture", ID_GET_BLOCK_TEXTURE, -1).addNative("shouldSideBeRendered", ID_SHOULD_SIDE_BE_RENDERED, -1)
+            .addNative("getCollisionBoundingBoxFromPool", ID_GET_COLLISION_BOUNDING_BOX_FROM_POOL, -1).addNative("canPlaceBlockAt", ID_CAN_PLACE_BLOCK_AT, -1)
+            .addNative("canPlaceBlockOnSide", ID_CAN_PLACE_BLOCK_ON_SIDE, -1).addNative("blockActivated", ID_BLOCK_ACTIVATED, -1)
+            .addNative("onBlockPlaced", ID_ON_BLOCK_PLACED, -1).addNative("onBlockPlacedBy", ID_ON_BLOCK_PLACED_BY, -1)
+            .addNative("onBlockDestroyedByPlayer", ID_ON_BLOCK_DESTROYED_BY_PLAYER, -1).addNative("onNeighborBlockChange", ID_ON_NEIGHBOR_BLOCK_CHANGE, -1)
+            .addNative("onBlockRemoval", ID_ON_BLOCK_REMOVAL, -1).addNative("onBlockAdded", ID_ON_BLOCK_ADDED, -1).addNative("tickBlock", ID_TICK_BLOCK, -1)
+            .addNative("getBlockModel", ID_GET_BLOCK_MODEL, -1).addNative("getBlock", ID_GET_BLOCK, 2);
 
     protected Block(int id) {
-        super(OBJECT_PROTOTYPE); // ModLoader
+        this(id, 0);
+    }
+
+    protected Block(int id, int index) {
+        this(BLOCK_PROTOTYPE);
+        createBlock(id, index != 0 ? new int[] { index } : null);
+    }
+
+    private void createBlock(int id, int[] textures) {
+        if (id == 0) {
+            throw new ComcraftException("Cannot create block 0 because 0 is air!", null);
+        }
         if (blocksList[id] != null) {
             throw new ComcraftException("Block ID is already in use! Id: " + id, null);
         }
         blocksList[id] = this;
         IdDropped = blockID = id;
-        addNative("create", ID_CREATE, 2);
-        addNative("getBlockName", ID_GET_BLOCK_NAME, 0);
-        addNative("isNormal", ID_IS_NORMAL, 0);
-        addNative("getBlockDestroyingSound", ID_GET_BLOCK_DESTROYING_SOUND, 0);
+        UsedTexturesList = textures != null ? textures : new int[0];
+        addVar("blockID", new Integer(blockID));
+        addVar("IdDropped", new Integer(IdDropped));
     }
 
-    protected Block(int id, int index) {
-        this(id);
-        UsedTexturesList = new int[] { index };
+    public Block(JsObject __proto__) {
+        super(__proto__);
     }
 
     public boolean collidesWithPlayer() {
@@ -109,7 +159,8 @@ public class Block extends JsObject {
     }
 
     public javax.microedition.m3g.Transform getBlockTransform(World world, int x, int y, int z, javax.microedition.m3g.Transform transform, int side) {
-        eh.runEvent("getBlockTransform", new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Transform(transform), new Integer(side) });
+        eh.runEvent("getBlockTransform", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Transform(transform),
+                new Integer(side) });
         Object success = eh.getLastSuccess("getBlockTransform");
         if (success == null) {
             return transform;
@@ -146,7 +197,7 @@ public class Block extends JsObject {
     }
 
     public int getBlockTexture(World world, int x, int y, int z, int side) {
-        eh.runEvent("getBlockTexture", new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Integer(side) });
+        eh.runEvent("getBlockTexture", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Integer(side) });
         Object success = eh.getLastSuccess("getBlockTexture");
         if (success == null) {
             return UsedTexturesList[0];
@@ -163,7 +214,7 @@ public class Block extends JsObject {
     }
 
     public boolean shouldSideBeRendered(World world, int x, int y, int z, int side) {
-        eh.runEvent("shouldSideBeRendered", new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Integer(side) });
+        eh.runEvent("shouldSideBeRendered", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Integer(side) });
         Object success = eh.getLastSuccess("shouldSideBeRendered");
         if (success == null) {
             return !world.isBlockNormal(x, y, z);
@@ -172,7 +223,7 @@ public class Block extends JsObject {
     }
 
     public AxisAlignedBB getCollisionBoundingBoxFromPool(World world, int x, int y, int z) {
-        eh.runEvent("getCollisionBoundingBoxFromPool", new Object[] { world, new Integer(x), new Integer(y), new Integer(z) });
+        eh.runEvent("getCollisionBoundingBoxFromPool", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z) });
         Object success = eh.getLastSuccess("getCollisionBoundingBoxFromPool");
         if (success == null) {
             return AxisAlignedBB.getBoundingBox(x, y, z, x + 1f, y + 1f, z + 1f);
@@ -181,7 +232,7 @@ public class Block extends JsObject {
     }
 
     public boolean canPlaceBlockOnSide(World world, int x, int y, int z, int side) {
-        eh.runEvent("canPlaceBlockOnSide", new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Integer(side) });
+        eh.runEvent("canPlaceBlockOnSide", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Integer(side) });
         Object success = eh.getLastSuccess("canPlaceBlockOnSide");
         if (success == null) {
             return canPlaceBlockAt(world, x, y, z);
@@ -190,7 +241,7 @@ public class Block extends JsObject {
     }
 
     public boolean canPlaceBlockAt(World world, int x, int y, int z) {
-        eh.runEvent("canPlaceBlockAt", new Object[] { world, new Integer(x), new Integer(y), new Integer(z) });
+        eh.runEvent("canPlaceBlockAt", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z) });
         Object success = eh.getLastSuccess("canPlaceBlockAt");
         if (success == null) {
             int i = world.getBlockID(x, y, z);
@@ -200,19 +251,19 @@ public class Block extends JsObject {
     }
 
     public void onBlockPlaced(World world, int x, int y, int z, int side) {
-        eh.runEvent("onBlockPlaced", new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Integer(side) });
+        eh.runEvent("onBlockPlaced", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Integer(side) });
     }
 
     public void onBlockPlacedBy(World world, int x, int y, int z, EntityPlayer entityPlayer) {
-        eh.runEvent("onBlockPlacedBy", new Object[] { world, new Integer(x), new Integer(y), new Integer(z), entityPlayer });
+        eh.runEvent("onBlockPlacedBy", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z), entityPlayer });
     }
 
     public void onBlockDestroyedByPlayer(World world, int x, int y, int z, int metadata) {
-        eh.runEvent("onBlockDestroyedByPlayer", new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Integer(metadata) });
+        eh.runEvent("onBlockDestroyedByPlayer", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Integer(metadata) });
     }
 
     public boolean blockActivated(World world, int x, int y, int z, EntityPlayer entityplayer, InvItemStack itemStack) {
-        eh.runEvent("blockActivated", new Object[] { world, new Integer(x), new Integer(y), new Integer(z), entityplayer, itemStack });
+        eh.runEvent("blockActivated", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z), entityplayer, itemStack });
         Object success = eh.getLastSuccess("blockActivated");
         if (success == null) {
             return false;
@@ -221,15 +272,15 @@ public class Block extends JsObject {
     }
 
     public void onNeighborBlockChange(World world, int x, int y, int z, int blockID) {
-        eh.runEvent("onNeighborBlockChange", new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Integer(blockID) });
+        eh.runEvent("onNeighborBlockChange", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z), new Integer(blockID) });
     }
 
     public void onBlockRemoval(World world, int x, int y, int z) {
-        eh.runEvent("onBlockRemoval", new Object[] { world, new Integer(x), new Integer(y), new Integer(z) });
+        eh.runEvent("onBlockRemoval", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z) });
     }
 
     public void onBlockAdded(World world, int x, int y, int z) {
-        eh.runEvent("onBlockAdded", new Object[] { world, new Integer(x), new Integer(y), new Integer(z) });
+        eh.runEvent("onBlockAdded", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z) });
     }
 
     public String getBlockDestroyingSound() {
@@ -241,7 +292,7 @@ public class Block extends JsObject {
     }
 
     public void tickBlock(World world, int x, int y, int z) {
-        eh.runEvent("tickBlock", new Object[] { world, new Integer(x), new Integer(y), new Integer(z) });
+        eh.runEvent("tickBlock", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z) });
     }
 
     public int[] getUsedTexturesList() {
@@ -249,7 +300,7 @@ public class Block extends JsObject {
     }
 
     public Node getBlockModel(World world, int x, int y, int z) {
-        eh.runEvent("getBlockModel", new Object[] { world, new Integer(x), new Integer(y), new Integer(z) });
+        eh.runEvent("getBlockModel", this, new Object[] { world, new Integer(x), new Integer(y), new Integer(z) });
         Object success = eh.getLastSuccess("getBlockModel");
         if (success == null) {
             return null;
@@ -258,11 +309,12 @@ public class Block extends JsObject {
     }
 
     public static Block getBlock(String name) {
+        String bname;
         for (int i = 0; i < blocksList.length; i++) {
             if (blocksList[i] == null) {
                 continue;
             }
-            if (blocksList[i].getBlockName().equals(name)) {
+            if ((bname = blocksList[i].getBlockName()) != null && bname.equals(name)) {
                 return blocksList[i];
             }
         }
@@ -396,6 +448,7 @@ public class Block extends JsObject {
         new BlockAnimal(125, 339, 341, 340, 357, 357).setBlockName("animalChicken");
         new BlockAnimal(126, 342, 344, 343, 344, 344).setBlockName("animalCow");
         new BlockAnimal(127, 345, 348, 346, 347, 347).setBlockName("animalPig");
+        new BlockPlayer().setBlockName("Player");
 
         InvItem.itemsList[getBlock("stoneSlab").blockID] = new InvItemSlab(getBlock("stoneSlab").blockID - 256, getBlock("doubleStoneSlab"));
         InvItem.itemsList[getBlock("plankSlab").blockID] = new InvItemSlab(getBlock("plankSlab").blockID - 256, getBlock("planks"));
@@ -425,136 +478,306 @@ public class Block extends JsObject {
         }
     }
 
-    // ModLoader start
+    private void ensureArguments(String fn, int minarg, int maxarg, int actarg) {
+        String s = "";
+        if (actarg < minarg) {
+            s = "at least";
+        } else if (actarg > maxarg) {
+            s = "at most";
+        } else {
+            return;
+        }
+        if (minarg == maxarg) {
+            s = "exactly";
+        }
+        throw new JsException(fn + "() takes " + s + " " + minarg + " arguments (" + actarg + " given)");
+    }
+
     public void evalNative(int id, JsArray stack, int sp, int parCount) {
         switch (id) {
+        case ID_GET_BLOCK:
+            stack.setObject(sp, getBlock(stack.getString(sp + 2)));
+            break;
+        case ID_CONSTRUCT:
+            ensureArguments("new Block", 2, 3, parCount);
+            if (!stack.isNumber(sp + 2)) {
+                throw new JsException("new Block() argument 1 (blockID) has to be an integer");
+            }
+            int[] textures = null;
+            if (parCount >= 2) {
+                Object par2 = stack.getObject(sp + 3);
+                if (par2 instanceof Double) {
+                    textures = new int[] { ((Double) par2).intValue() };
+                } else if (par2 instanceof JsArray) {
+                    textures = ModArray.toIntArray((JsArray) par2);
+                } else {
+                    throw new JsException("new Block() argument 2 must be of type Integer or Array of integers");
+                }
+            }
+            if (parCount == 3) {
+                loadObject(stack.getJsObject(sp + 4));
+            }
+            createBlock(stack.getInt(sp + 2), textures);
+            InvItem.itemsList[blockID] = new InvItemBlock(blockID - 256);
+            break;
+        case ID_COLLIDES_WITH_PLAYER:
+            stack.setBoolean(sp, this.collidesWithPlayer());
+            break;
+        case ID_COLLIDES_WITH_PLAYER + 1:
+            collidesWithPlayer = stack.getBoolean(sp);
+            break;
         case ID_GET_BLOCK_NAME:
             stack.setObject(sp, getBlockName());
+            break;
+        case ID_DOES_BLOCK_DESTROY_GRASS:
+            stack.setBoolean(sp, doesBlockDestroyGrass());
+            break;
+        case ID_DOES_BLOCK_DESTROY_GRASS + 1:
+            doesBlockDestroyGrass = stack.getBoolean(sp + 2);
+            break;
+        case ID_IS_REPLACEABLE_BLOCK:
+            stack.setBoolean(sp, isReplaceableBlock());
+            break;
+        case ID_IS_REPLACEABLE_BLOCK + 1:
+            isReplaceableBlock = stack.getBoolean(sp);
+            break;
+        case ID_IS_UPDATABLE_BLOCK:
+            stack.setBoolean(sp, isUpdatableBlock());
+            break;
+        case ID_IS_UPDATABLE_BLOCK + 1:
+            isUpdatableBlock = stack.getBoolean(sp);
+            break;
+        case ID_CAN_BE_PIECED:
+            stack.setBoolean(sp, canBePieced());
+            break;
+        case ID_CAN_BE_PIECED + 1:
+            canBePieced = stack.getBoolean(sp);
+            break;
+        case ID_CAN_BE_PIECED_VERTICALLY:
+            stack.setBoolean(sp, canBePiecedVertically());
+            break;
+        case ID_CAN_BE_PIECED_VERTICALLY + 1:
+            canBePiecedVertically = stack.getBoolean(sp);
             break;
         case ID_IS_NORMAL:
             stack.setBoolean(sp, isNormal());
             break;
-        case ID_GET_BLOCK_DESTROYING_SOUND:
-            stack.setObject(sp, getBlockDestroyingSound());
+        case ID_IS_NORMAL + 1:
+            isNormal = stack.getBoolean(sp);
             break;
-        case ID_GET_BLOCK_PLACING_SOUND:
+        case ID_RENDER_TYPE:
+            stack.setInt(sp, getRenderType());
+            break;
+        case ID_RENDER_TYPE + 1:
+            RenderType = stack.getInt(sp);
+            break;
+        case ID_ID_DROPPED:
+            stack.setInt(sp, getIdDropped());
+            break;
+        case ID_ID_DROPPED + 1:
+            IdDropped = stack.getInt(sp);
+            break;
+        case ID_BLOCK_PLACING_SOUND:
             stack.setObject(sp, getBlockPlacingSound());
             break;
-        case ID_CREATE:
-            InvItem.itemsList[blockID] = new InvItemBlock(blockID - 256);
-            String name = stack.getString(sp + 2);
-            // if (getBlock(name) != null) {
-            // blocksList[blockID] = null;
-            // throw new
-            // ComcraftException("Block name is already in use! name: " + name,
-            // null);
-            // }
-            setBlockName(name);
-            JsObject properties = stack.getJsObject(sp + 3);
-            Object v;
-
-            v = properties.getObject("collidesWithPlayer");
-            if (v != null)
-                collidesWithPlayer = ((Boolean) v).booleanValue();
-            v = properties.getObject("doesBlockDestroyGrass");
-            if (v != null)
-                doesBlockDestroyGrass = ((Boolean) v).booleanValue();
-            v = properties.getObject("isReplaceableBlock");
-            if (v != null)
-                isReplaceableBlock = ((Boolean) v).booleanValue();
-            v = properties.getObject("isUpdatableBlock");
-            if (v != null)
-                isUpdatableBlock = ((Boolean) v).booleanValue();
-            v = properties.getObject("canBePieced");
-            if (v != null)
-                canBePieced = ((Boolean) v).booleanValue();
-            v = properties.getObject("canBePiecedVertically");
-            if (v != null)
-                canBePiecedVertically = ((Boolean) v).booleanValue();
-            v = properties.getObject("isNormal");
-            if (v != null)
-                isNormal = ((Boolean) v).booleanValue();
-
-            v = properties.getObject("RenderType");
-            if (v != null)
-                RenderType = ((Double) v).intValue();
-            v = properties.getObject("IdDropped");
-            if (v != null)
-                IdDropped = ((Double) v).intValue();
-
-            v = properties.getObject("blockPlacingSound");
-            if (v != null)
-                blockPlacingSound = (String) v;
-            v = properties.getObject("blockDestroyingSound");
-            if (v != null)
-                blockDestroyingSound = (String) v;
-
-            v = properties.getObject("getBlockTransform");
-            if (v != null)
-                eh.bindEvent("getBlockTransform", (JsFunction) v);
-            v = properties.getObject("getBlockVertexBufferPieced");
-            if (v != null)
-                BlockVertexBufferPieced = (VertexBuffer[][][][]) v;
-            v = properties.getObject("getBlockVertexBufferSided");
-            if (v != null)
-                BlockVertexBufferSided = (VertexBuffer[]) v;
-            v = properties.getObject("getBlockIndexBuffer");
-            if (v != null)
-                BlockIndexBuffer = (IndexBuffer) v;
-            v = properties.getObject("getBlockTexture");
-            if (v != null)
-                eh.bindEvent("getBlockTexture", (JsFunction) v);
-            v = properties.getObject("shouldSideBeRendered");
-            if (v != null)
-                eh.bindEvent("shouldSideBeRendered", (JsFunction) v);
-            v = properties.getObject("getCollisionBoundingBoxFromPool");
-            if (v != null)
-                eh.bindEvent("getCollisionBoundingBoxFromPool", (JsFunction) v);
-            v = properties.getObject("canPlaceBlockAt");
-            if (v != null)
-                eh.bindEvent("canPlaceBlockAt", (JsFunction) v);
-            v = properties.getObject("canPlaceBlockOnSide");
-            if (v != null)
-                eh.bindEvent("canPlaceBlockOnSide", (JsFunction) v);
-            v = properties.getObject("blockActivated");
-            if (v != null)
-                eh.bindEvent("blockActivated", (JsFunction) v);
-            v = properties.getObject("onBlockPlaced");
-            if (v != null)
-                eh.bindEvent("onBlockPlaced", (JsFunction) v);
-            v = properties.getObject("onBlockPlacedBy");
-            if (v != null)
-                eh.bindEvent("onBlockPlacedBy", (JsFunction) v);
-            v = properties.getObject("onBlockDestroyedByPlayer");
-            if (v != null)
-                eh.bindEvent("onBlockDestroyedByPlayer", (JsFunction) v);
-            v = properties.getObject("onNeighborBlockChange");
-            if (v != null)
-                eh.bindEvent("onNeighborBlockChange", (JsFunction) v);
-            v = properties.getObject("onBlockRemoval");
-            if (v != null)
-                eh.bindEvent("onBlockRemoval", (JsFunction) v);
-            v = properties.getObject("onBlockAdded");
-            if (v != null)
-                eh.bindEvent("onBlockAdded", (JsFunction) v);
-            v = properties.getObject("tickBlock");
-            if (v != null)
-                eh.bindEvent("tickBlock", (JsFunction) v);
-            v = properties.getObject("getBlockModel");
-            if (v != null)
-                eh.bindEvent("getBlockModel", (JsFunction) v);
-
-            v = properties.getObject("textures");
-            if (v != null)
-                UsedTexturesList = ModArray.toIntArray((JsArray) v);
+        case ID_BLOCK_PLACING_SOUND + 1:
+            blockPlacingSound = stack.getString(sp);
+            break;
+        case ID_BLOCK_DESTROYING_SOUND:
+            stack.setObject(sp, getBlockDestroyingSound());
+            break;
+        case ID_BLOCK_DESTROYING_SOUND + 1:
+            blockDestroyingSound = stack.getString(sp);
+            break;
+        case ID_BLOCK_VERTEX_BUFFER_PIECED:
+            stack.setObject(sp, BlockVertexBufferPieced);
+            break;
+        case ID_BLOCK_VERTEX_BUFFER_PIECED + 1:
+            BlockVertexBufferPieced = (VertexBuffer[][][][]) stack.getObject(sp);
+            break;
+        case ID_BLOCK_VERTEX_BUFFER_SIDED:
+            stack.setObject(sp, BlockVertexBufferSided);
+            break;
+        case ID_BLOCK_VERTEX_BUFFER_SIDED + 1:
+            BlockVertexBufferSided = (VertexBuffer[]) stack.getObject(sp);
+            break;
+        case ID_BLOCK_INDEX_BUFFER:
+            stack.setObject(sp, BlockIndexBuffer);
+            break;
+        case ID_BLOCK_INDEX_BUFFER + 1:
+            BlockIndexBuffer = (IndexBuffer) stack.getObject(sp);
+            break;
+        case ID_GET_BLOCK_TRANSFORM + 1:
+            eh.setEvent("getBlockTransform", (JsFunction) stack.getObject(sp));
+            break;
+        case ID_GET_BLOCK_TEXTURE + 1:
+            eh.setEvent("getBlockTexture", (JsFunction) stack.getObject(sp));
+            break;
+        case ID_SHOULD_SIDE_BE_RENDERED + 1:
+            eh.setEvent("shouldSideBeRendered", (JsFunction) stack.getObject(sp));
+            break;
+        case ID_GET_COLLISION_BOUNDING_BOX_FROM_POOL + 1:
+            eh.setEvent("getCollisionBoundingBoxFromPool", (JsFunction) stack.getObject(sp));
+            break;
+        case ID_CAN_PLACE_BLOCK_AT:
+            if (stack.size() == 0)
+                stack.setObject(sp, new JsFunction(ID_CAN_PLACE_BLOCK_AT, 4));
+            else
+                stack.setBoolean(sp, canPlaceBlockAt((World) stack.getObject(sp + 2), stack.getInt(sp + 3), stack.getInt(sp + 4), stack.getInt(sp + 5)));
+            break;
+        case ID_CAN_PLACE_BLOCK_AT + 1:
+            eh.setEvent("canPlaceBlockAt", (JsFunction) stack.getObject(sp));
+            break;
+        case ID_CAN_PLACE_BLOCK_ON_SIDE + 1:
+            eh.setEvent("canPlaceBlockOnSide", (JsFunction) stack.getObject(sp));
+            break;
+        case ID_BLOCK_ACTIVATED + 1:
+            eh.setEvent("blockActivated", (JsFunction) stack.getObject(sp));
+            break;
+        case ID_ON_BLOCK_PLACED + 1:
+            eh.setEvent("onBlockPlaced", (JsFunction) stack.getObject(sp));
+            break;
+        case ID_ON_BLOCK_PLACED_BY + 1:
+            eh.setEvent("onBlockPlacedBy", (JsFunction) stack.getObject(sp));
+            break;
+        case ID_ON_BLOCK_DESTROYED_BY_PLAYER + 1:
+            eh.setEvent("onBlockDestroyedByPlayer", (JsFunction) stack.getObject(sp));
+            break;
+        case ID_ON_NEIGHBOR_BLOCK_CHANGE + 1:
+            eh.setEvent("onNeighborBlockChange", (JsFunction) stack.getObject(sp));
+            break;
+        case ID_ON_BLOCK_REMOVAL + 1:
+            eh.setEvent("onBlockRemoval", (JsFunction) stack.getObject(sp));
+            break;
+        case ID_ON_BLOCK_ADDED + 1:
+            eh.setEvent("onBlockAdded", (JsFunction) stack.getObject(sp));
+            break;
+        case ID_TICK_BLOCK + 1:
+            eh.setEvent("tickBlock", (JsFunction) stack.getObject(sp));
+            break;
+        case ID_GET_BLOCK_MODEL + 1:
+            eh.setEvent("getBlockModel", (JsFunction) stack.getObject(sp));
+            break;
+        case ID_GET_BLOCK_TRANSFORM:
+        case ID_GET_BLOCK_TEXTURE:
+        case ID_SHOULD_SIDE_BE_RENDERED:
+        case ID_GET_COLLISION_BOUNDING_BOX_FROM_POOL:
+        case ID_CAN_PLACE_BLOCK_ON_SIDE:
+        case ID_BLOCK_ACTIVATED:
+        case ID_ON_BLOCK_PLACED:
+        case ID_ON_BLOCK_PLACED_BY:
+        case ID_ON_BLOCK_DESTROYED_BY_PLAYER:
+        case ID_ON_NEIGHBOR_BLOCK_CHANGE:
+        case ID_ON_BLOCK_REMOVAL:
+        case ID_ON_BLOCK_ADDED:
+        case ID_TICK_BLOCK:
+        case ID_GET_BLOCK_MODEL:
+            // Cannot access functions
             break;
         default:
             super.evalNative(id, stack, sp, parCount);
         }
     }
 
-    public String toString() {
-        return "[object Block[" + blockID + "]]";
+    private void loadObject(JsObject properties) {
+        Object v;
+        // Boolean properties
+        v = properties.getObject("collidesWithPlayer");
+        if (v != null)
+            collidesWithPlayer = ((Boolean) v).booleanValue();
+
+        v = properties.getObject("doesBlockDestroyGrass");
+        if (v != null)
+            doesBlockDestroyGrass = ((Boolean) v).booleanValue();
+
+        v = properties.getObject("isReplaceableBlock");
+        if (v != null)
+            isReplaceableBlock = ((Boolean) v).booleanValue();
+
+        v = properties.getObject("isUpdatableBlock");
+        if (v != null)
+            isUpdatableBlock = ((Boolean) v).booleanValue();
+
+        v = properties.getObject("canBePieced");
+        if (v != null)
+            canBePieced = ((Boolean) v).booleanValue();
+
+        v = properties.getObject("canBePiecedVertically");
+        if (v != null)
+            canBePiecedVertically = ((Boolean) v).booleanValue();
+
+        v = properties.getObject("isNormal");
+        if (v != null)
+            isNormal = ((Boolean) v).booleanValue();
+
+        // Integer properties
+        v = properties.getObject("RenderType");
+        if (v != null)
+            RenderType = ((Double) v).intValue();
+
+        v = properties.getObject("IdDropped");
+        if (v != null)
+            IdDropped = ((Double) v).intValue();
+
+        // String properties
+        v = properties.getObject("blockPlacingSound");
+        if (v != null)
+            blockPlacingSound = (String) v;
+
+        v = properties.getObject("blockDestroyingSound");
+        if (v != null)
+            blockDestroyingSound = (String) v;
+
+        v = properties.getObject("getBlockVertexBufferPieced");
+        if (v != null)
+            BlockVertexBufferPieced = (VertexBuffer[][][][]) v;
+
+        v = properties.getObject("getBlockVertexBufferSided");
+        if (v != null)
+            BlockVertexBufferSided = (VertexBuffer[]) v;
+
+        v = properties.getObject("getBlockIndexBuffer");
+        if (v != null)
+            BlockIndexBuffer = (IndexBuffer) v;
+
+        // Function properties
+        eh.setEvent("getBlockTransform", (JsFunction) properties.getObject("getBlockTransform"));
+
+        eh.setEvent("getBlockTexture", (JsFunction) properties.getObject("getBlockTexture"));
+
+        eh.setEvent("shouldSideBeRendered", (JsFunction) properties.getObject("shouldSideBeRendered"));
+
+        eh.setEvent("getCollisionBoundingBoxFromPool", (JsFunction) properties.getObject("getCollisionBoundingBoxFromPool"));
+
+        eh.setEvent("canPlaceBlockAt", (JsFunction) properties.getObject("canPlaceBlockAt"));
+
+        eh.setEvent("canPlaceBlockOnSide", (JsFunction) properties.getObject("canPlaceBlockOnSide"));
+
+        eh.setEvent("blockActivated", (JsFunction) properties.getObject("blockActivated"));
+
+        eh.setEvent("onBlockPlaced", (JsFunction) properties.getObject("onBlockPlaced"));
+
+        eh.setEvent("onBlockPlacedBy", (JsFunction) properties.getObject("onBlockPlacedBy"));
+
+        eh.setEvent("onBlockDestroyedByPlayer", (JsFunction) properties.getObject("onBlockDestroyedByPlayer"));
+
+        eh.setEvent("onNeighborBlockChange", (JsFunction) properties.getObject("onNeighborBlockChange"));
+
+        eh.setEvent("onBlockRemoval", (JsFunction) properties.getObject("onBlockRemoval"));
+
+        eh.setEvent("onBlockAdded", (JsFunction) properties.getObject("onBlockAdded"));
+
+        eh.setEvent("tickBlock", (JsFunction) properties.getObject("tickBlock"));
+
+        eh.setEvent("getBlockModel", (JsFunction) properties.getObject("getBlockModel"));
+
+        v = properties.getObject("textures");
+        if (v != null)
+            UsedTexturesList = ModArray.toIntArray((JsArray) v);
+
     }
-    // ModLoader end
+
+    public String toString() {
+        return "[object Block {blockName=" + blockName + ", blockID=" + blockID + "}]";
+    }
 }
